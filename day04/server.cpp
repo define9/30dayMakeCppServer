@@ -31,12 +31,13 @@ int main() {
       if (events[i].data.fd == socket->getFd()) {
         if (events[i].events & EPOLLIN) {
           // 新建立一个连接, 这里有内存泄漏, 因为没有delete
-          // 如果这里不用指针, 变量在这个if结束后,指针引用的将出问题
-          InetAddress* clientIp = new InetAddress();
-          int fd = socket->accept(clientIp);
+          // 如果socket这里不用指针, 变量在这个if结束后,指针引用的将出问题
+          // 但是clientIP只是用于绑定然后显示一下, 后面交互用的是 socketfd
+          InetAddress clientIp;
+          int fd = socket->accept(&clientIp);
           Socket* client = new Socket(fd);
 
-          printf("new client fd %d! IP: %s Port: %d\n", client->getFd(), inet_ntoa(clientIp->addr.sin_addr), ntohs(clientIp->addr.sin_port));
+          printf("new client fd %d! IP: %s Port: %d\n", client->getFd(), inet_ntoa(clientIp.addr.sin_addr), ntohs(clientIp.addr.sin_port));
 
           client->setnonblocking();
           ep->addFd(client->getFd(), EPOLLIN | EPOLLET);
