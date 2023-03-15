@@ -33,7 +33,7 @@ int main() {
     std::vector<Channel*> channels = ep->poll();
     for (int i = 0; i < channels.size(); i++) {
       if (channels[i]->getFd() == socket->getFd()) {
-        if (channels[i]->getEvents() & EPOLLIN) {
+        if (channels[i]->getRevents() & EPOLLIN) {
           // 新建立一个连接
           // 如果socket这里不用指针, 变量在这个if结束后,指针引用的将出问题
           // 但是clientIP只是用于绑定然后显示一下, 后面交互用的是 socket 的 fd
@@ -51,7 +51,7 @@ int main() {
           Channel* channel = new Channel(client->getFd(), ep);
           channel->enableReading();
         }
-      } else if (channels[i]->getEvents() & EPOLLIN) {
+      } else if (channels[i]->getRevents() & EPOLLIN) {
         // 只是一个可读事件
         auto it = existSocket.find(channels[i]->getFd());
         if (it != existSocket.end()) {

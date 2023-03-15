@@ -21,9 +21,10 @@ void Channel::enableReading() {
 
 int Channel::getFd() { return _fd; }
 uint32_t Channel::getEvents() { return _events; }
+uint32_t Channel::getRevents() { return _revents; }
 bool Channel::getInEpoll() { return _inEpoll; }
 void Channel::addEpoll() { _inEpoll = true; }
 
-void Channel::setEvents(uint32_t events) {
-    _events = events;
+void Channel::setRevents(uint32_t revents) {
+    _revents = revents;
 }
