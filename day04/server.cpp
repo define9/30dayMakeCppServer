@@ -83,8 +83,8 @@ void handleReadEvent(Socket* socket) {
       printf("EOF, client fd %d disconnected\n", fd);
 
       close(fd);  // 关闭socket会自动将文件描述符从epoll树上移除
-      delete socket;
       existSocket.erase(fd);
+      delete socket;
 
       break;
     }
