@@ -5,10 +5,12 @@
 #include "InetAddress.h"
 #include "Socket.h"
 #include "util.h"
+#include <map>
 
 #define READ_BUFFER 1024
 
-void handleReadEvent(int);
+void handleReadEvent(Socket*);
+std::map<int, Socket*> existSocket;
 
 int main() {
   // 1. 创建服务端socket, 和epoll
@@ -30,21 +32,26 @@ int main() {
     for (int i = 0; i < events.size(); i++) {
       if (events[i].data.fd == socket->getFd()) {
         if (events[i].events & EPOLLIN) {
-          // 新建立一个连接, 这里有内存泄漏, 因为没有delete
+          // 新建立一个连接
           // 如果socket这里不用指针, 变量在这个if结束后,指针引用的将出问题
-          // 但是clientIP只是用于绑定然后显示一下, 后面交互用的是 socketfd
+          // 但是clientIP只是用于绑定然后显示一下, 后面交互用的是 socket 的 fd
           InetAddress clientIp;
           int fd = socket->accept(&clientIp);
           Socket* client = new Socket(fd);
+          existSocket.insert_or_assign(fd, client);
 
           printf("new client fd %d! IP: %s Port: %d\n", client->getFd(), inet_ntoa(clientIp.addr.sin_addr), ntohs(clientIp.addr.sin_port));
+          printf("exist client count: %d\n", existSocket.size());
 
           client->setnonblocking();
           ep->addFd(client->getFd(), EPOLLIN | EPOLLET);
         }
       } else if (events[i].events & EPOLLIN) {
         // 只是一个可读事件
-        handleReadEvent(events[i].data.fd);
+        auto it = existSocket.find(events[i].data.fd);
+        if (it != existSocket.end()) {
+          handleReadEvent(it->second);
+        }
       } else {
         printf("no support event");
       }
@@ -55,7 +62,8 @@ int main() {
   delete socket;
 }
 
-void handleReadEvent(int fd) {
+void handleReadEvent(Socket* socket) {
+  int fd = socket->getFd();
   char buf[READ_BUFFER];
   while (true) {
     // 由于使用非阻塞IO, 需要循环读取, 到这里时,
@@ -73,7 +81,11 @@ void handleReadEvent(int fd) {
       break;
     } else if (bytes_read == 0) {  // EOF，客户端断开连接
       printf("EOF, client fd %d disconnected\n", fd);
+
       close(fd);  // 关闭socket会自动将文件描述符从epoll树上移除
+      delete socket;
+      existSocket.erase(fd);
+
       break;
     }
   }
