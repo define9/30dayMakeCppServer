@@ -26,12 +26,10 @@ void ThreadPool::work(int i) {
                  return !_running || !_tasks.empty();
                });
       if (!_running && _tasks.empty()) {
-        _cv.notify_all();
         return;  // 任务队列为空并且线程池停止，退出线程
       }
       task = _tasks.front();  // 从任务队列头取出一个任务
       _tasks.pop();
-      _cv.notify_all();
     }
     task();  // 执行任务
   }
@@ -47,6 +45,7 @@ void ThreadPool::start(size_t size) {
 
 void ThreadPool::stop() {
   _running = false;
+  _cv.notify_all();
   for (size_t i = 0; i < _threads.size(); i++) {
     if (_threads[i]->joinable())
       _threads[i]->join();
