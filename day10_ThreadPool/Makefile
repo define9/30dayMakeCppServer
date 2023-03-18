@@ -5,3 +5,6 @@ clean:
 	rm server && rm client
 threadTest:
 	g++ -pthread src/ThreadPool.cpp ThreadPoolTest.cpp -o ThreadPoolTest
+
+test:
+	g++ -pthread src/ThreadPool.cpp src/util.cpp test.cpp -o test

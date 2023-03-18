@@ -21,10 +21,13 @@ class Epoll {
   Epoll();
   ~Epoll();
 
-  void addFd(int fd, uint32_t op);
   std::vector<Channel*> poll(int timeout = -1);
   /**
    * @brief 更新channel
    */
   void updateChannel(Channel* channel);
+
+  void deleteChannel(Channel* channel);
+  
+  static int ErrorCount;
 };

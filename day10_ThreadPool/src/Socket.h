@@ -13,6 +13,10 @@ class Socket {
 
  public:
   Socket();
+
+  /**
+   * @brief 使用此构造方法, fd将由 此类管理
+  */
   Socket(int);
   ~Socket();
 
@@ -21,6 +25,7 @@ class Socket {
   void setnonblocking();
 
   int accept(InetAddress*);
+  void connect(InetAddress*);
 
   int getFd();
 };

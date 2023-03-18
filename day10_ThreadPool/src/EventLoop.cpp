@@ -7,7 +7,7 @@ EventLoop::EventLoop() {
 }
 
 EventLoop::~EventLoop() {
-  _running = false;
+  stop();
 
   delete _ep;
   _ep = nullptr;
@@ -20,19 +20,30 @@ void EventLoop::loop() {
   if (!_running) {
     printf("[warn] no start!\n");
   }
-  _threadPool->start(5);
-  printf("start thread pool!\n");
   while (_running) {
     std::vector<Channel*> channels = _ep->poll();
     for (auto channel : channels) {
-      _threadPool->addTask([=]() { channel->handle(); });
+      if (channel->isSync()) {
+        printf("handle执行,fd: %d\n", channel->getFd());
+        channel->handle();
+      } else {
+        _threadPool->addTask([=]() { channel->handle(); });
+      }
     }
   }
   printf("loop end\n");
 }
 
 void EventLoop::updateChannel(Channel* channel) { _ep->updateChannel(channel); }
+void EventLoop::deleteChannel(Channel* channel) { _ep->deleteChannel(channel); }
+void EventLoop::start() {
+  _running = true;
+  _threadPool->start(5);
+  printf("start thread pool!\n");
+}
 
-void EventLoop::start() { _running = true; }
-
-void EventLoop::stop() { _threadPool->stop(); }
+void EventLoop::stop() {
+  _running = false;
+  _threadPool->stop();
+  printf("stop thread pool!\n");
+}

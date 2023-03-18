@@ -1,6 +1,7 @@
 #pragma once
 #include <errno.h>
 #include <map>
+#include <mutex>
 
 #include "Acceptor.h"
 #include "EventLoop.h"
@@ -17,6 +18,7 @@ class Server {
 
   InetAddress _serverAddr;
   std::map<int, Connection*> _openConnection;
+  std::mutex _mapLock;
 
   void init();
 
@@ -27,6 +29,6 @@ class Server {
 
   void loop();
 
-  void newConnection(Socket* servSocket, EventLoop* loop);
+  void newConnection(Connection* conn);
   void disConnection(Connection* conn);
 };

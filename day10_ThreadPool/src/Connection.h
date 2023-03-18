@@ -14,21 +14,22 @@
 
 class Connection {
  private:
-  Socket* _cltSocket{nullptr};
-  Channel* _cltChannel{nullptr};
-  InetAddress* _cltAddr{nullptr};
+  Socket* _socket{nullptr};
+  Channel* _channel{nullptr};
+  InetAddress* _addr{nullptr};
 
   Buffer* _inBuf{nullptr};
   Buffer* _outBuf{nullptr};
 
   std::function<void()> _cb;  // 断开连接的回调函数
  public:
-  Connection(Socket* servSocket, EventLoop* loop);
+  Connection(int fd, InetAddress* addr);
   ~Connection();
 
   void handle();
   void setDisConnection(std::function<void()> cb);
 
-  InetAddress* getCltAddr();
-  Socket* getCltSocket();
+  InetAddress* getAddr();
+  Socket* getSocket();
+  Channel* getChannel();
 };

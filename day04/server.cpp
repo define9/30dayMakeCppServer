@@ -25,7 +25,7 @@ int main() {
 
   // 3. 设置为非堵塞, 放入epoll中
   socket->setnonblocking();
-  ep->addFd(socket->getFd(), EPOLLIN | EPOLLET);
+  ep->addFd(socket->getFd(), EPOLLIN);
 
   while (true) {
     std::vector<epoll_event> events = ep->poll();

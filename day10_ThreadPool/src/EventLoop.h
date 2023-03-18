@@ -10,7 +10,7 @@
 class EventLoop {
  private:
   Epoll* _ep;
-  bool _running;
+  volatile bool _running;
   ThreadPool* _threadPool;
 
  public:
@@ -23,6 +23,7 @@ class EventLoop {
    * 向 epoll 中更新 channel
    */
   void updateChannel(Channel* channel);
+  void deleteChannel(Channel* channel);
 
   void start();
   void stop();

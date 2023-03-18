@@ -24,12 +24,14 @@ int main() {
     bzero(&buf, sizeof(buf));
     scanf("%s", buf);
     ssize_t write_bytes = write(sockfd, buf, sizeof(buf));
+    printf("write: %d\n", write_bytes);
     if (write_bytes == -1) {
       printf("socket already disconnected, can't write any more!\n");
       break;
     }
     bzero(&buf, sizeof(buf));
     ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
+    printf("read: %d\n", write_bytes);
     if (read_bytes > 0) {
       printf("message from server: %s\n", buf);
     } else if (read_bytes == 0) {

@@ -13,9 +13,7 @@ Server::Server(uint16_t port) {
 void Server::init() {
   _loop = new EventLoop();
   _acceptor = new Acceptor(&_serverAddr);
-  _acceptor->setNewConnection([=](Socket* servSocket, EventLoop* loop){
-    newConnection(servSocket, loop);
-  });
+  _acceptor->setConn([=](Connection* conn) { newConnection(conn); });
 }
 
 Server::~Server() {
@@ -34,21 +32,24 @@ void Server::loop() {
   _loop->loop();
 }
 
-void Server::newConnection(Socket* servSocket, EventLoop* loop) {
-  Connection* conn = new Connection(servSocket, loop);
-  conn->setDisConnection([=](){
+void Server::newConnection(Connection* conn) {
+  conn->setDisConnection([=]() {
+    _loop->deleteChannel(conn->getChannel());
     disConnection(conn);
   });
-  _openConnection.insert_or_assign(conn->getCltSocket()->getFd(), conn);
-  printf("-----------------------------\n");
-  printf("new connection, current connection count: %ld\n", _openConnection.size());
-  printf("client IP: %s Port: %d\n", inet_ntoa(conn->getCltAddr()->addr.sin_addr), ntohs(conn->getCltAddr()->addr.sin_port));
-  printf("-----------------------------\n");
+  std::unique_lock<std::mutex> lock(_mapLock);
+  _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
+  printf("new connection, current connection count: %ld\n",
+         _openConnection.size());
+  printf("client IP: %s Port: %d\n", inet_ntoa(conn->getAddr()->addr.sin_addr),
+         ntohs(conn->getAddr()->addr.sin_port));
 }
 
 void Server::disConnection(Connection* conn) {
-  _openConnection.erase(conn->getCltSocket()->getFd());
-  // 我们不需要手动close(fd), 因为他的生命周期由 Socket 管理
-  delete conn;
-  printf("new connection, current connection count: %ld\n", _openConnection.size());
+  std::unique_lock<std::mutex> lock(_mapLock);
+  _openConnection.erase(conn->getSocket()->getFd());
+  printf("dis connection, current connection count: %ld\n",
+         _openConnection.size());
+  printf("client IP: %s Port: %d\n", inet_ntoa(conn->getAddr()->addr.sin_addr),
+         ntohs(conn->getAddr()->addr.sin_port));
 }

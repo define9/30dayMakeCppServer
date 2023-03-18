@@ -6,26 +6,31 @@ Acceptor::Acceptor(InetAddress* serverAddr)
   _serverSocket->bind(serverAddr);
   _serverSocket->setnonblocking();
   
-  _serverChannel = new Channel(_serverSocket->getFd());
-  _serverChannel->prepareEvents();
+  _serverChannel = new Channel(_serverSocket->getFd(), true);
+  _serverChannel->inEvents();
 }
 
 Acceptor::~Acceptor()
 {
   delete _serverSocket;
-  _serverSocket = nullptr;
-
   delete _serverChannel;
-  _serverChannel = nullptr;
 }
 
-void Acceptor::setNewConnection(std::function<void(Socket* servSocket, EventLoop* loop)> fun) {
-  _newConnection = fun;
+void Acceptor::setConn(std::function<void(Connection*)> fun) {
+  _conn = fun;
 }
 
 void Acceptor::listen(EventLoop* loop) {
   _serverSocket->listen();
   // 对于 服务socket的回调函数, 是新增一个连接
-  _serverChannel->setCallback([=]() { _newConnection(_serverSocket, loop); });
+  _serverChannel->setCallback([=]() {
+    InetAddress* addr = new InetAddress();
+    int fd = _serverSocket->accept(addr);
+    Connection* conn = new Connection(fd, addr);
+    
+    Channel* ch = conn->getChannel();
+    loop->updateChannel(ch); //将连接的事件, 放到loop中
+    _conn(conn);
+  });
   loop->updateChannel(_serverChannel);
 }

@@ -31,4 +31,9 @@ int Socket::accept(InetAddress* addr) {
   return fd;
 }
 
+void Socket::connect(InetAddress* addr) {
+  struct sockaddr_in serv_addr = addr->addr;
+  ::connect(_fd, (sockaddr*)&serv_addr, sizeof(serv_addr));
+}
+
 int Socket::getFd() { return _fd; }
