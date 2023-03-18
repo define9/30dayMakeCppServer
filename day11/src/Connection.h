@@ -26,6 +26,12 @@ class Connection {
 
   void readHandle();
   void writeHandle();
+
+  void readNonBlock();
+  void readBlock();
+
+  void writeNonBlock();
+  void writeBlock();
  public:
   Connection(int fd, InetAddress* addr);
   /**
@@ -39,15 +45,17 @@ class Connection {
 
   void setDisConnection(std::function<void()> cb);
   /// @brief 
-  /// @param cb 收到消息自动回调的函数, 返回true会清空缓冲区
+  /// @param cb 收到消息自动回调的函数, 返回 true 会保留缓存区
   void setRecvConnection(std::function<bool(Buffer* buf)> cb);
 
   InetAddress* getAddr();
   Socket* getSocket();
   Channel* getChannel();
 
-  /// @brief 向缓存区写入
+  /// @brief 写入
   /// @param str 
+  /// @param force 为 true 则强行写入, 不会等待 epoll 调用
   /// @return 
-  int write(std::string str);
+  int write(std::string str, bool force=false);
+  std::string read(bool force=false);
 };

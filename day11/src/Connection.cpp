@@ -21,8 +21,6 @@ Connection::~Connection() {
 }
 
 void Connection::init(int fd) {
-  _socket->setnonblocking();
-
   _channel = new Channel(fd);
   _channel->inETEvents();
   _channel->setReadCallback([=]() { readHandle(); });
@@ -34,40 +32,20 @@ void Connection::init(int fd) {
 
 /// @brief 使用 epoll 监控了消息来的事件read
 void Connection::readHandle() {
-  int fd = _socket->getFd();
-  char buf[PRE_READ_SIZE];
-  while (true) {
-    bzero(&buf, sizeof(buf));
-    ssize_t bytes_read = ::read(fd, buf, sizeof(buf));
-    if (bytes_read > 0) {
-      _inBuf->append(buf, sizeof(buf));
-    } else if (bytes_read == -1 && errno == EINTR) {
-      continue;
-    } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      if (_recvCb(_inBuf)) {
-        _inBuf->clear();
-      }
-      break;
-    } else if (bytes_read == 0) {  // EOF，客户端断开连接
-      printf("EOF, client fd %d disconnected\n", fd);
-      _delCb();
-      this->~Connection();
-      return;
-    }
+  if (_socket->isNonBlock()) {
+    readNonBlock();
+  } else {
+    readBlock();
   }
 }
 
-/// @brief 可能也需要加循环, 或者锁
 void Connection::writeHandle() {
-  int size = _outBuf->size();
-  if (size > 0) {
-    int fd = _socket->getFd();
-    int res = ::write(fd, _outBuf->c_str(), _outBuf->size());
-    if (res > 0) {
-      printf("写入并清空\n");
-      _outBuf->clear();
-    }
+  if (_socket->isNonBlock()) {
+    writeNonBlock();
+  } else {
+    writeBlock();
   }
+  _outBuf->clear(); // 写完了, 清缓存
 }
 
 void Connection::setDisConnection(std::function<void()> cb) { _delCb = cb; }
@@ -81,6 +59,89 @@ Socket* Connection::getSocket() { return _socket; }
 
 Channel* Connection::getChannel() { return _channel; }
 
-int Connection::write(std::string str) {
+int Connection::write(std::string str, bool force) {
   _outBuf->append(str.c_str(), str.length());
+  if (force) {
+    writeHandle();
+  }
+}
+
+std::string Connection::read(bool force) {
+  if (force) {
+    readHandle();
+  }
+  return _inBuf->c_str();
+}
+
+void Connection::readNonBlock() {
+  int fd = _socket->getFd();
+  char buf[PRE_READ_SIZE];
+  while (true) {
+    bzero(&buf, sizeof(buf));
+    ssize_t bytes_read = ::read(fd, buf, sizeof(buf));
+    if (bytes_read > 0) {
+      _inBuf->append(buf, sizeof(buf));
+    } else if (bytes_read == -1 && errno == EINTR) {
+      continue;
+    } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+      if (_recvCb(_inBuf) != true) {
+        _inBuf->clear();
+      }
+      break;
+    } else if (bytes_read == 0) {  // EOF, 断开连接
+      printf("EOF, client fd %d disconnected\n", fd);
+      _delCb();
+      this->~Connection();
+      return;
+    }
+  }
+}
+void Connection::readBlock() {
+  int fd = _socket->getFd();
+  unsigned int rcv_size = 0;
+  socklen_t len = sizeof(rcv_size);
+  getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcv_size, &len);
+  char buf[rcv_size];
+  ssize_t bytes_read = ::read(fd, buf, sizeof(buf));
+  if (bytes_read > 0) {
+    _inBuf->append(buf, bytes_read);
+  } else if (bytes_read == 0) {
+    printf("read EOF, blocking client fd %d disconnected\n", fd);
+  } else if (bytes_read == -1) {
+    printf("Other error on blocking client fd %d\n", fd);
+  }
+  if (_recvCb(_inBuf) != true) {
+    _inBuf->clear();
+  }
+}
+
+void Connection::writeNonBlock() {
+  int fd = _socket->getFd();
+  char buf[_outBuf->size()];
+  memcpy(buf, _outBuf->c_str(), _outBuf->size());
+  int data_size = _outBuf->size();
+  int data_left = data_size;
+  while (data_left > 0) {
+    ssize_t bytes_write = ::write(fd, buf + data_size - data_left, data_left);
+    if (bytes_write == -1 && errno == EINTR) {
+      printf("continue writing\n");
+      continue;
+    }
+    if (bytes_write == -1 && errno == EAGAIN) {
+      break;
+    }
+    if (bytes_write == -1) {
+      printf("Other error on client fd %d\n", fd);
+      break;
+    }
+    data_left -= bytes_write;
+  }
+}
+void Connection::writeBlock() {
+  // 没有处理send_buffer_数据大于TCP写缓冲区，的情况，可能会有bug
+  int fd = _socket->getFd();
+  ssize_t bytes_write = ::write(fd, _outBuf->c_str(), _outBuf->size());
+  if (bytes_write == -1) {
+    printf("Other error on blocking client fd %d\n", fd);
+  }
 }

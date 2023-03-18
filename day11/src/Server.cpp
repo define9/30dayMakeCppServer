@@ -42,7 +42,7 @@ void Server::newConnection(Connection* conn) {
     std::stringstream fmt;
     fmt << "you say: " << inBuf->c_str() << ", your port: " << ntohs(conn->getAddr()->addr.sin_port) << std::endl;
     conn->write(fmt.str());
-    return true;
+    return false;
   });
 
   std::unique_lock<std::mutex> lock(_mapLock);

@@ -28,6 +28,7 @@ void Acceptor::listen(EventLoop* loop) {
     int fd = _serverSocket->accept(addr);
     Connection* conn = new Connection(fd, addr);
     
+    conn->getSocket()->setnonblocking();
     Channel* ch = conn->getChannel();
     loop->updateChannel(ch); //将连接的事件, 放到loop中
     _conn(conn);
