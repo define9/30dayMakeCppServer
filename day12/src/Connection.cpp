@@ -45,7 +45,7 @@ void Connection::writeHandle() {
   } else {
     writeBlock();
   }
-  _outBuf->clear(); // 写完了, 清缓存
+  _outBuf->clear();  // 写完了, 清缓存
 }
 
 void Connection::setDisConnection(std::function<void()> cb) { _delCb = cb; }
@@ -59,7 +59,7 @@ Socket* Connection::getSocket() { return _socket; }
 
 Channel* Connection::getChannel() { return _channel; }
 
-int Connection::write(std::string str, bool force) {
+void Connection::write(std::string str, bool force) {
   _outBuf->append(str.c_str(), str.length());
   if (force) {
     writeHandle();
@@ -89,12 +89,13 @@ void Connection::readNonBlock() {
       }
       break;
     } else if (bytes_read == 0) {  // EOF, 断开连接
-      printf("EOF, client fd %d disconnected\n", fd);
       _delCb();
-      this->~Connection();
-      return;
+      goto kill;
     }
   }
+  return;
+kill:
+  this->~Connection();
 }
 void Connection::readBlock() {
   int fd = _socket->getFd();
@@ -106,9 +107,9 @@ void Connection::readBlock() {
   if (bytes_read > 0) {
     _inBuf->append(buf, bytes_read);
   } else if (bytes_read == 0) {
-    printf("read EOF, blocking client fd %d disconnected\n", fd);
+    Log::debug("read EOF, blocking client fd: ", fd);
   } else if (bytes_read == -1) {
-    printf("Other error on blocking client fd %d\n", fd);
+    Log::debug("Other error on blocking client fd: ", fd);
   }
   if (_recvCb(_inBuf) != true) {
     _inBuf->clear();
@@ -124,14 +125,13 @@ void Connection::writeNonBlock() {
   while (data_left > 0) {
     ssize_t bytes_write = ::write(fd, buf + data_size - data_left, data_left);
     if (bytes_write == -1 && errno == EINTR) {
-      printf("continue writing\n");
       continue;
     }
     if (bytes_write == -1 && errno == EAGAIN) {
       break;
     }
     if (bytes_write == -1) {
-      printf("Other error on client fd %d\n", fd);
+      Log::debug("Other error on blocking client fd: ", fd);
       break;
     }
     data_left -= bytes_write;
@@ -142,6 +142,6 @@ void Connection::writeBlock() {
   int fd = _socket->getFd();
   ssize_t bytes_write = ::write(fd, _outBuf->c_str(), _outBuf->size());
   if (bytes_write == -1) {
-    printf("Other error on blocking client fd %d\n", fd);
+    Log::debug("Other error on blocking client fd: ", fd);
   }
 }

@@ -21,8 +21,7 @@ bool socketIsOpen(int fd) {
 
   int ret = getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len);
   if (ret == -1) {
-    // getsockopt() failed
-    printf("getsockopt failed\n");
+    Log::error("getsockopt failed");
     return false;
   }
   return ret == 0;

@@ -10,7 +10,7 @@ void test(){
     std::cout << "hellp" << std::endl;
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
     ThreadPool *pool = new ThreadPool();
     pool->start(5);

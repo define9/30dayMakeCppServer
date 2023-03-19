@@ -1,11 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "Socket.h"
 #include <errno.h>
-#include <iostream>
+#include "Log.h"
 
 void errif(bool, const char*);
 int guard(int, const char*);

@@ -18,7 +18,7 @@ EventLoop::~EventLoop() {
 
 void EventLoop::loop() {
   if (!_running) {
-    printf("[warn] no start!\n");
+    Log::warn("EventLoop no start!");
   }
   while (_running) {
     std::vector<Channel*> channels = _ep->poll();
@@ -30,7 +30,7 @@ void EventLoop::loop() {
       }
     }
   }
-  printf("loop end\n");
+  Log::info("EventLoop loop end");
 }
 
 void EventLoop::updateChannel(Channel* channel) { _ep->updateChannel(channel); }
@@ -38,11 +38,9 @@ void EventLoop::deleteChannel(Channel* channel) { _ep->deleteChannel(channel); }
 void EventLoop::start() {
   _running = true;
   _threadPool->start(5);
-  printf("start thread pool!\n");
 }
 
 void EventLoop::stop() {
   _running = false;
   _threadPool->stop();
-  printf("stop thread pool!\n");
 }

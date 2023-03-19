@@ -52,7 +52,7 @@ message(STATUS "-------------------------- Compiler ----------------------------
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -std=c++17 -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 
@@ -84,6 +84,8 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     set(BUILD_TYPE LEVEL_INFO)
 endif()
 
+configure_file(build_type.hpp.in ${CMAKE_BINARY_DIR}/generated/build_type.hpp)
+
 # Output directory.
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -96,7 +98,10 @@ message(STATUS "--------------------------- Source -----------------------------
 
 # Includes.
 set(SRC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/include)
-include_directories(${SRC_INCLUDE_DIR})
+include_directories(
+    ${SRC_INCLUDE_DIR}
+    ${CMAKE_BINARY_DIR}/generated/
+)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 

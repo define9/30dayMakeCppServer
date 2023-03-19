@@ -39,7 +39,6 @@ void Epoll::updateChannel(Channel* channel) {
     errif(epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &ev) < 0, "epoll add error");
     channel->addToEpoll();
   } else {
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!modify epoll\n");
     errif(epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &ev) < 0, "epoll modify error");
   }
 }

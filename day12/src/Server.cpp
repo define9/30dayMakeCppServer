@@ -26,7 +26,7 @@ Server::~Server() {
 
 void Server::loop() {
   _acceptor->listen(_loop);
-  printf("listen ...\n");
+  Log::info("listen ...");
 
   _loop->start();
   _loop->loop();
@@ -47,17 +47,12 @@ void Server::newConnection(Connection* conn) {
 
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
-  printf("new connection, current connection count: %ld\n",
-         _openConnection.size());
-  printf("client IP: %s Port: %d\n", inet_ntoa(conn->getAddr()->addr.sin_addr),
-         ntohs(conn->getAddr()->addr.sin_port));
+  Log::debug("new connection, current connection count: ", _openConnection.size());
+  Log::debug("client IP: ", inet_ntoa(conn->getAddr()->addr.sin_addr), "Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
 
 void Server::disConnection(Connection* conn) {
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.erase(conn->getSocket()->getFd());
-  printf("dis connection, current connection count: %ld\n",
-         _openConnection.size());
-  printf("client IP: %s Port: %d\n", inet_ntoa(conn->getAddr()->addr.sin_addr),
-         ntohs(conn->getAddr()->addr.sin_port));
+  Log::debug("dis connection, current connection count: ", _openConnection.size());
 }

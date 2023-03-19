@@ -8,6 +8,8 @@
 #include <thread>
 #include <vector>
 
+#include "Log.h"
+
 class ThreadPool {
  private:
   std::vector<std::thread*> _threads;

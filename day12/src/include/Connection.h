@@ -56,6 +56,6 @@ class Connection {
   /// @param str 
   /// @param force 为 true 则强行写入, 不会等待 epoll 调用
   /// @return 
-  int write(std::string str, bool force=false);
+  void write(std::string str, bool force=false);
   std::string read(bool force=false);
 };

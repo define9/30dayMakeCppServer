@@ -9,6 +9,7 @@
 #include "InetAddress.h"
 #include "Connection.h"
 #include "Socket.h"
+#include "Log.h"
 
 #define READ_BUFFER 1024
 
