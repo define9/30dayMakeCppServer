@@ -1,16 +1,4 @@
-### 2023/03/19
+### 2023/03/23
 
-修改为 cmake 项目
-
-```bash
-cd day12
-mkdir build
-cd build
-
-cmake ..
-make
-
-```
-将会在 `day12/build/bin/` 目录下看到 server 等可执行文件
-
-添加日志函数
+修一些bug; 稍微实现一下http协议, Chrome内核的浏览器(edge) 在请求的时候会建立两个tcp连接(可能是为了加速)
+使用Firefox正常测试
