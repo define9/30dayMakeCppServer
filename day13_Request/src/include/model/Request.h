@@ -4,6 +4,8 @@
 #include <string>
 
 #include "Buffer.h"
+#include "util.h"
+#include "Log.h"
 #include "ReqMethod.h"
 using namespace ReqMethod;
 
@@ -20,12 +22,13 @@ class Request {
   /* 第三部分 */
   std::string _body;
 
-  bool parseRequest(const Buffer& buf);
-
+  bool parseRequest(const Buffer* buf);
+  bool parseRequestLine(const char* begin, const char* end);
  public:
-  Request(const Buffer& buf);
+  Request(const Buffer* buf);
   ~Request();
 
-  const std::string getPath();
+  const std::string getPath() const;
+  const std::string& getVersion() const;
 };
 

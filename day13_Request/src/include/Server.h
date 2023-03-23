@@ -1,15 +1,19 @@
 #pragma once
 #include <errno.h>
+
 #include <map>
 #include <mutex>
 #include <sstream>
 
 #include "Acceptor.h"
+#include "Connection.h"
+#include "Dispatcher.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
-#include "Connection.h"
-#include "Socket.h"
 #include "Log.h"
+#include "Socket.h"
+#include "model/Request.h"
+#include "model/Response.h"
 
 #define READ_BUFFER 1024
 
@@ -30,6 +34,7 @@ class Server {
   ~Server();
 
   void loop();
+  void stop();
 
   void newConnection(Connection* conn);
   void disConnection(Connection* conn);

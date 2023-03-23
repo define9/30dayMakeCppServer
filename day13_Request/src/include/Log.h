@@ -8,7 +8,7 @@
 /// @brief 先不考虑多线程的输出
 class Log {
  public:
-  enum LogLevel { DEBUG, INFO, WARN, ERROR };
+  enum LogLevel { DEBUG = 1, INFO, WARN, ERROR };
 
  private:
   static Log* _instance;
@@ -40,6 +40,9 @@ class Log {
 
   template <typename T, typename... Args>
   static void error(const T& firstArg, Args... args);
+
+  template <typename T, typename... Args>
+  static void errif(const bool con, const T& firstArg, Args... args);
 };
 
 template <typename T, typename... Args>
@@ -69,6 +72,14 @@ void Log::warn(const T& firstArg, Args... args) {
 template <typename T, typename... Args>
 void Log::error(const T& firstArg, Args... args) {
   if (_levelEnv <= LogLevel::ERROR) {
+    printHead(LogLevel::ERROR);
+    print(firstArg, args...);
+  }
+}
+
+template <typename T, typename... Args>
+void Log::errif(const bool con, const T& firstArg, Args... args) {
+  if (con && _levelEnv <= LogLevel::ERROR) {
     printHead(LogLevel::ERROR);
     print(firstArg, args...);
   }

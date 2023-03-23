@@ -6,6 +6,7 @@
 
 #include "InetAddress.h"
 #include "util.h"
+#include "Log.h"
 
 class Socket {
  private:

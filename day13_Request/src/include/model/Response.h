@@ -1,11 +1,15 @@
 #pragma once
 
-#include <map>
-#include <string>
-#include <sstream>
+#include <time.h>
 
-#include "util.h"
+#include <map>
+#include <sstream>
+#include <string>
+
+#include "Log.h"
 #include "ReqMethod.h"
+#include "Request.h"
+#include "util.h"
 
 using namespace ReqMethod;
 
@@ -24,7 +28,7 @@ class Response {
   std::string _body;
 
  public:
-  Response();
+  Response(const Request* req);
   ~Response();
 
   void addHead(const std::string& key, const std::string& value);
@@ -32,5 +36,5 @@ class Response {
 
   void setBody(const std::string& body);
 
-  const std::string& serialize2Str();
+  const std::string serialize2Str();
 };

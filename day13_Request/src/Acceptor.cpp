@@ -12,8 +12,8 @@ Acceptor::Acceptor(InetAddress* serverAddr)
 
 Acceptor::~Acceptor()
 {
-  delete _serverSocket;
   delete _serverChannel;
+  delete _serverSocket;
 }
 
 void Acceptor::setConn(std::function<void(Connection*)> fun) {

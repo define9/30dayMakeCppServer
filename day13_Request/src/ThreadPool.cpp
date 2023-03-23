@@ -33,13 +33,14 @@ void ThreadPool::start(size_t size) {
 }
 
 void ThreadPool::stop() {
-  _running = false;
-  _cv.notify_all();
-  for (size_t i = 0; i < _threads.size(); i++) {
-    if (_threads[i]->joinable())
-      _threads[i]->join();
-    delete _threads[i];
+  if (_running) {
+    _running = false;
+    _cv.notify_all();
+    for (size_t i = 0; i < _threads.size(); i++) {
+      if (_threads[i]->joinable()) _threads[i]->join();
+      delete _threads[i];
+    }
+    _threads.clear();
+    Log::debug("ThreadPool stop");
   }
-  _threads.clear();
-  Log::debug("ThreadPool stop");
 }

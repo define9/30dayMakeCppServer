@@ -41,6 +41,8 @@ void EventLoop::start() {
 }
 
 void EventLoop::stop() {
-  _running = false;
-  _threadPool->stop();
+  if (_running) {
+    _running = false;
+    _threadPool->stop();
+  }
 }

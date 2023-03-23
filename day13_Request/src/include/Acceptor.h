@@ -10,8 +10,8 @@
 class Acceptor {
  private:
   std::function<void(Connection* conn)> _conn;
-  Socket* _serverSocket{nullptr};                    // 服务端的socket
-  Channel* _serverChannel{nullptr};                  // 服务端的channel
+  Socket* _serverSocket{nullptr};   // 服务端的socket
+  Channel* _serverChannel{nullptr}; // 服务端的channel
 
  public:
   Acceptor(InetAddress* serverAddr);

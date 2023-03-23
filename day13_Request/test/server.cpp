@@ -6,7 +6,7 @@
 #include <map>
 
 int main() {
-  Server server("0.0.0.0", 8888);
+  Server server(8080);
   printf("server init done.\n");
   server.loop();
 }

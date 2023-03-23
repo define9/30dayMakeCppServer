@@ -3,7 +3,7 @@
 
 namespace ReqMethod {
 enum Method {
-  GET,
+  GET = 1,
   POST,
   HEAD,
   PUT,

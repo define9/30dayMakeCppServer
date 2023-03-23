@@ -2,7 +2,7 @@
 
 namespace {
 enum State {
-  ExpectRequestLine,
+  ExpectRequestLine = 1,
   ExpectHeaders,
   ExpectBody,
   Done,
@@ -23,39 +23,34 @@ const char* findCRLF(const std::string& buf, std::size_t startIndex = 0) {
   return buf.c_str() + i;
 }
 
-bool parseRequestLine(const char* begin, const char* end) {
-  bool succ = false;
-
-  return succ;
-}
 }  // namespace
 
-Request::Request(const Buffer& buf) { parseRequest(buf); }
+Request::Request(const Buffer* buf) { parseRequest(buf); }
 
 Request::~Request() {}
 
-bool Request::parseRequest(const Buffer& buf) {
+bool Request::parseRequest(const Buffer* buf) {
   State state = State::ExpectRequestLine;
-  const char* p = buf.c_str();
+  const char* p = buf->c_str();
   bool hasMore = true;
 
   while (hasMore) {
-    if (state == State::ExpectRequestLine) {
-    }
     switch (state) {
-      case State::ExpectRequestLine:
-        const char* crlf = findCRLF(buf.str());
+      case State::ExpectRequestLine: {
+        const char* crlf = findCRLF(buf->str());
         if (crlf != nullptr) {
-          parseRequestLine(buf.c_str(), crlf);
+          parseRequestLine(buf->c_str(), crlf);
           state = State::ExpectHeaders;
         }
-        break;
+      } break;
       case State::ExpectHeaders:
+        state = State::Done;
         break;
       case State::ExpectBody:
+        state = State::Done;
         break;
-      case Done:
-      default:
+      case State::Done:
+        hasMore = false;
         break;
     }
   }
@@ -63,4 +58,16 @@ bool Request::parseRequest(const Buffer& buf) {
   return true;
 }
 
-const std::string Request::getPath() { return _path; }
+const std::string Request::getPath() const { return _path; }
+
+bool Request::parseRequestLine(const char* begin, const char* end) {
+  auto vs = stringSplit(std::string(begin, end), ' ');
+
+  _method = safeGet(method, vs[0], Method::GET);
+  _path = vs[1];
+  _httpVersion = vs[2];
+
+  return true;
+}
+
+const std::string& Request::getVersion() const { return _httpVersion; }

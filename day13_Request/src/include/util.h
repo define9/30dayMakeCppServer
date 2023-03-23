@@ -4,6 +4,9 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include <map>
+#include <vector>
+
 #include "Log.h"
 #include "Socket.h"
 
@@ -25,5 +28,7 @@ auto safeGet(const std::map<Key, Value>& map, const Key key, const Value def) {
   }
   return res;
 }
+
+std::vector<std::string> stringSplit(const std::string& str, char delim);
 
 #endif

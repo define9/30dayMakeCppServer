@@ -25,7 +25,10 @@ const static std::map<std::string, const char*> suffix2Type = {
     {".css", "text/css"}};
 }  // namespace
 
-Response::Response() { _status = 200; }
+Response::Response(const Request* req) {
+  _status = 200;
+  _httpVersion = req->getVersion();
+}
 
 Response::~Response() {}
 
@@ -34,11 +37,16 @@ void Response::addHead(const std::string& key, const std::string& value) {
 }
 void Response::setStatusCode(uint16_t status) { _status = status; }
 
-void Response::setBody(const std::string& body) { _body = body; }
+void Response::setBody(const std::string& body) {
+  _body = body;
+  _head["Content-Length"] = std::to_string(body.size());
+  _head["Content-Type"] = "text/plain;charset=UTF-8";
+  _head["Server"] = "tinyServer/0.1";
+}
 
-const std::string& Response::serialize2Str() {
+const std::string Response::serialize2Str() {
   std::stringstream os;
-  auto message = safeGet(code2Message, _status, "OK");
+  const std::string message = safeGet(code2Message, _status, "OK");
 
   os << _httpVersion << " " << _status << " " << message << "\r\n";
 
@@ -46,7 +54,9 @@ const std::string& Response::serialize2Str() {
     os << pair.first << ": " << pair.second << "\r\n";
   }
 
-  os << _body << "\r\n";
+  os << "\r\n" << _body << "\r\n";
+
+  Log::debug("response: ", os.str());
 
   return os.str();
 }

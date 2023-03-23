@@ -40,12 +40,13 @@ void Connection::readHandle() {
 }
 
 void Connection::writeHandle() {
+  Log::debug("写入并刷新");
   if (_socket->isNonBlock()) {
     writeNonBlock();
   } else {
     writeBlock();
   }
-  _outBuf->clear();  // 写完了, 清缓存
+  _outBuf->clear();
 }
 
 void Connection::setDisConnection(std::function<void()> cb) { _delCb = cb; }
@@ -108,12 +109,17 @@ void Connection::readBlock() {
     _inBuf->append(buf, bytes_read);
   } else if (bytes_read == 0) {
     Log::debug("read EOF, blocking client fd: ", fd);
+    _delCb();
+    goto kill;
   } else if (bytes_read == -1) {
     Log::debug("Other error on blocking client fd: ", fd);
   }
   if (_recvCb(_inBuf) != true) {
     _inBuf->clear();
   }
+  return;
+kill:
+  this->~Connection();
 }
 
 void Connection::writeNonBlock() {

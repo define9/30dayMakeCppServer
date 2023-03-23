@@ -27,10 +27,10 @@ void Channel::setWriteCallback(std::function<void()> write) {
 }
 
 void Channel::handle() {
+  if (_revents & (EPOLLOUT)) {  // 可以向客户端写入,这里写在前面, 因为读可能会断开连接,析构channel
+    _write_callback();
+  }
   if (_revents & (EPOLLIN | EPOLLPRI)) {
     _read_callback();
-  }
-  if (_revents & (EPOLLOUT)) { //可以向客户端写入
-    _write_callback();
   }
 }

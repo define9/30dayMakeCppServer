@@ -32,27 +32,43 @@ void Server::loop() {
   _loop->loop();
 }
 
+void Server::stop() {
+  for (auto pair : _openConnection) {
+    delete pair.second;
+  }
+
+  _loop->stop();
+}
+
 void Server::newConnection(Connection* conn) {
   conn->setDisConnection([=]() {
-    _loop->deleteChannel(conn->getChannel());
     disConnection(conn);
+    _loop->deleteChannel(conn->getChannel());
   });
 
   conn->setRecvConnection([=](Buffer* inBuf) -> bool {
-    std::stringstream fmt;
-    fmt << "you say: " << inBuf->c_str() << ", your port: " << ntohs(conn->getAddr()->addr.sin_port) << std::endl;
-    conn->write(fmt.str());
+    const Request* req = new Request(inBuf);
+    Response* resp = new Response(req);
+    resp->setBody("hello");
+    conn->write(resp->serialize2Str(), true);
+    delete req;
+    delete resp;
     return false;
   });
 
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
-  Log::debug("new connection, current connection count: ", _openConnection.size());
-  Log::debug("client IP: ", inet_ntoa(conn->getAddr()->addr.sin_addr), "Port: ", ntohs(conn->getAddr()->addr.sin_port));
+  Log::debug("new connection, current connection count: ",
+             _openConnection.size());
+  Log::debug("client IP: ", inet_ntoa(conn->getAddr()->addr.sin_addr),
+             "Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
 
 void Server::disConnection(Connection* conn) {
+  Log::debug("disConnection start");
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.erase(conn->getSocket()->getFd());
-  Log::debug("dis connection, current connection count: ", _openConnection.size());
+  Log::debug("dis connection, current connection count: ",
+             _openConnection.size());
+  Log::debug("disConnection start");
 }
