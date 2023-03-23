@@ -14,14 +14,14 @@ void Server::init() {
   _loop = new EventLoop();
   _acceptor = new Acceptor(&_serverAddr);
   _acceptor->setConn([=](Connection* conn) { newConnection(conn); });
+  _dispatcher = new Dispatcher();
+  _dispatcher->mountDir("./www/");
 }
 
 Server::~Server() {
   delete _loop;
-  _loop = nullptr;
-
   delete _acceptor;
-  _acceptor = nullptr;
+  delete _dispatcher;
 }
 
 void Server::loop() {
@@ -49,7 +49,8 @@ void Server::newConnection(Connection* conn) {
   conn->setRecvConnection([=](Buffer* inBuf) -> bool {
     const Request* req = new Request(inBuf);
     Response* resp = new Response(req);
-    resp->setBody("hello");
+
+    _dispatcher->resolve(req, resp);
     conn->write(resp->serialize2Str(), true);
     delete req;
     delete resp;
@@ -61,14 +62,12 @@ void Server::newConnection(Connection* conn) {
   Log::debug("new connection, current connection count: ",
              _openConnection.size());
   Log::debug("client IP: ", inet_ntoa(conn->getAddr()->addr.sin_addr),
-             "Port: ", ntohs(conn->getAddr()->addr.sin_port));
+             ", Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
 
 void Server::disConnection(Connection* conn) {
-  Log::debug("disConnection start");
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.erase(conn->getSocket()->getFd());
   Log::debug("dis connection, current connection count: ",
              _openConnection.size());
-  Log::debug("disConnection start");
 }

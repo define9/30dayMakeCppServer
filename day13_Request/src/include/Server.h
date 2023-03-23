@@ -21,6 +21,7 @@ class Server {
  private:
   EventLoop* _loop{nullptr};
   Acceptor* _acceptor{nullptr};
+  Dispatcher* _dispatcher{nullptr};
 
   InetAddress _serverAddr;
   std::map<int, Connection*> _openConnection;

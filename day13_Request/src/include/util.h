@@ -31,4 +31,6 @@ auto safeGet(const std::map<Key, Value>& map, const Key key, const Value def) {
 
 std::vector<std::string> stringSplit(const std::string& str, char delim);
 
+std::string getSuffix(const std::string& filename);
+
 #endif

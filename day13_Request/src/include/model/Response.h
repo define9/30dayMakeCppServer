@@ -13,6 +13,28 @@
 
 using namespace ReqMethod;
 
+namespace ResponseConstant {
+const static std::map<std::string, const char*> suffix2Type = {
+    {".html", "text/html"},
+    {".xml", "text/xml"},
+    {".xhtml", "application/xhtml+xml"},
+    {".txt", "text/plain"},
+    {".rtf", "application/rtf"},
+    {".pdf", "application/pdf"},
+    {".word", "application/nsword"},
+    {".png", "image/png"},
+    {".gif", "image/gif"},
+    {".jpg", "image/jpeg"},
+    {".jpeg", "image/jpeg"},
+    {".au", "audio/basic"},
+    {".mpeg", "video/mpeg"},
+    {".mpg", "video/mpeg"},
+    {".avi", "video/x-msvideo"},
+    {".gz", "application/x-gzip"},
+    {".tar", "application/x-tar"},
+    {".css", "text/css"}};
+}  // namespace ResponseConstant
+
 class Response {
  private:
   /* 第一行, 也是第一部分 */
@@ -35,6 +57,7 @@ class Response {
   void setStatusCode(uint16_t status);
 
   void setBody(const std::string& body);
+  void setContentType(const std::string& type);
 
   const std::string serialize2Str();
 };

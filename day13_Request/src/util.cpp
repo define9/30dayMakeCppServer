@@ -63,3 +63,7 @@ std::vector<std::string> stringSplit(const std::string &str, char delim) {
   }
   return elems;
 }
+
+std::string getSuffix(const std::string &filename) {
+  return filename.substr(filename.find_last_of('.') + 1);
+}
