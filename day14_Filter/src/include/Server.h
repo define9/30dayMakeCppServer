@@ -12,6 +12,8 @@
 #include "InetAddress.h"
 #include "Log.h"
 #include "Socket.h"
+#include "model/IController.h"
+#include "model/IFilter.h"
 #include "model/Request.h"
 #include "model/Response.h"
 
@@ -27,6 +29,8 @@ class Server {
   std::map<int, Connection*> _openConnection;
   std::mutex _mapLock;
 
+  std::vector<IFilter*> _filters;
+
   void init();
 
  public:
@@ -39,4 +43,11 @@ class Server {
 
   void newConnection(Connection* conn);
   void disConnection(Connection* conn);
+
+  /// @brief 添加filter, 并由Server负责delete
+  /// @param filter
+  void registerFilter(IFilter* filter);
+  void registerController(IController* controller);
+
+  void addHandle(std::string url, std::function<void(const Request* req, Response* resp)> handle);
 };

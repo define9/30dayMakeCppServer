@@ -1,13 +1,11 @@
 #include "Dispatcher.h"
 
-Dispatcher::Dispatcher() { _defaultFiles.push_back("index.html"); }
+Dispatcher::Dispatcher() {
+  _defaultFiles.push_back("index.html");
+  _errPage[404] = "404.html";
+}
 
 Dispatcher::~Dispatcher() {}
-
-void parseResponseType(const std::string& suffix, Response* resp) {
-  const std::string& type = safeGet(ResponseConstant::suffix2Type, suffix, "");
-  resp->setContentType(type);
-}
 
 void Dispatcher::resolve(const Request* req, Response* resp) {
   Log::info("receive a request, path: ", req->getPath());
@@ -19,37 +17,28 @@ void Dispatcher::resolve(const Request* req, Response* resp) {
   }
 
   // 开始处理静态文件
-  const std::string path = req->getPath();
+  const std::string path = _wwwRoot + req->getPath();
   bool useDefault =
       path.at(path.size() - 1) == '/';  // 是否读取默认文件, index.html
   bool found = false;
 
-  for (auto dir : _dir) {
-    if (!useDefault) {
-      found = doStaticRequest(dir + path, resp);
-    } else {
-      for (auto defFile : _defaultFiles) {
-        found = doStaticRequest(dir + path + defFile, resp);
-        if (found) break;
-      }
+  if (!useDefault) {
+    found = doStaticRequest(path, resp);
+  } else {
+    for (auto defFile : _defaultFiles) {
+      found = doStaticRequest(path + defFile, resp);
+      if (found) return;
     }
   }
 
   if (found) return;
 
   resp->setStatusCode(404);
-  resp->setBody("");
-  Log::warn("file not found, path: ", req->getPath());
+  doStaticRequest(_wwwRoot + _errPage[404], resp);
+  Log::debug("file not found, path: ", req->getPath());
 }
 
-void Dispatcher::mountDir(const std::string& path) {
-  if (_dir.size() > 0) {
-    Log::warn("folder is mounted");
-    return;
-  }
-
-  _dir.push_back(_rootPath + path);
-}
+void Dispatcher::mountDir(const std::string& path) { _wwwRoot = path; }
 
 bool Dispatcher::doStaticRequest(const std::string& pathStr, Response* resp) {
   struct stat sbuf;
@@ -81,7 +70,14 @@ bool Dispatcher::doStaticRequest(const std::string& pathStr, Response* resp) {
   }
 
   char* srcAddr = static_cast<char*>(mmapRet);
+
   resp->setBody(std::string(srcAddr, sbuf.st_size));
+  std::string suffix = getSuffix(pathStr);
+  resp->setContentType(safeGet(ResponseConstant::suffix2Type, suffix, ""));
   munmap(srcAddr, sbuf.st_size);
   return true;
+}
+
+void Dispatcher::addHandle(std::string url, std::function<void(const Request* req, Response* resp)> handle) {
+  _handles.insert_or_assign(url, handle);
 }

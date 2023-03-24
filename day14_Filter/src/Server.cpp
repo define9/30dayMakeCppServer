@@ -22,6 +22,11 @@ Server::~Server() {
   delete _loop;
   delete _acceptor;
   delete _dispatcher;
+
+  for (auto filter : _filters) {
+    delete filter;
+  }
+  _filters.clear();
 }
 
 void Server::loop() {
@@ -70,4 +75,16 @@ void Server::disConnection(Connection* conn) {
   _openConnection.erase(conn->getSocket()->getFd());
   Log::debug("dis connection, current connection count: ",
              _openConnection.size());
+}
+
+void Server::registerFilter(IFilter* filter) { _filters.push_back(filter); }
+
+void Server::registerController(IController* controller) {
+  // 暂时没有储存controller, 只添加了路由, 后续考虑轻量IoC
+  controller->addRoute(this);
+  delete controller;
+}
+
+void Server::addHandle(std::string url, std::function<void(const Request* req, Response* resp)> handle) {
+  _dispatcher->addHandle(url, handle);
 }

@@ -17,9 +17,10 @@ class Dispatcher {
   std::string _rootPath;
   std::map<std::string, std::function<void(const Request* req, Response* resp)>>
       _handles;
-  std::vector<std::string> _dir;
+  std::string _wwwRoot; // 挂载的目录
 
   std::vector<std::string> _defaultFiles;
+  std::map<uint16_t, std::string> _errPage;
 
   bool doStaticRequest(const std::string& pathStr, Response* resp);
 
@@ -32,4 +33,6 @@ class Dispatcher {
   /// @brief 挂载一个静态目录
   /// @param path
   void mountDir(const std::string& path);
+
+  void addHandle(std::string url, std::function<void(const Request* req, Response* resp)> handle);
 };
