@@ -7,6 +7,7 @@
 #include "Buffer.h"
 #include "InetAddress.h"
 #include "Socket.h"
+#include "Connection.h"
 #include "ThreadPool.h"
 #include "util.h"
 #include "model/Request.h"
@@ -14,17 +15,18 @@
 using namespace std;
 
 void oneClient() {
-  int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  Socket* socket = new Socket();
+  InetAddress* addr = new InetAddress("127.0.0.1", 8080);
+  socket->connect(addr);
+  Connection* conn = new Connection(socket, addr);
+  conn->setRecvConnection([=](Buffer* buf) -> bool {
+    std::cout << buf->c_str() << std::endl;
+    return false;
+  });
 
-  struct sockaddr_in serv_addr;
-  bzero(&serv_addr, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = inet_addr("127.123.0.1");
-  serv_addr.sin_port = htons(8888);
-
-  int a = connect(sockfd, (sockaddr *)&serv_addr, sizeof(serv_addr));
-  connectStatus(a);
-  close(sockfd);
+  conn->write("12345", true);
+  conn->read(true);
+  delete conn;
 }
 
 int main(int argc, char *argv[]) {

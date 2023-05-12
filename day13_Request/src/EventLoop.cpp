@@ -24,8 +24,10 @@ void EventLoop::loop() {
     std::vector<Channel*> channels = _ep->poll();
     for (auto channel : channels) {
       if (channel->isSync()) {
+        Log::info("sync handle");
         channel->handle();
       } else {
+        Log::info("add task");
         _threadPool->addTask([=]() { channel->handle(); });
       }
     }

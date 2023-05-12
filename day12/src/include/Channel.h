@@ -19,7 +19,7 @@ class Channel {
   std::function<void()> _write_callback;
 
  public:
-  Channel(int fd, bool useSync=false);
+  Channel(int fd, bool useSync=true);
   ~Channel();
 
   int getFd();

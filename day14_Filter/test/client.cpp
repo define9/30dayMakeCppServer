@@ -5,7 +5,7 @@
 
 int main() {
   Socket* socket = new Socket();
-  InetAddress* addr = new InetAddress("127.0.0.1", 8888);
+  InetAddress* addr = new InetAddress("127.0.0.1", 8080);
   socket->connect(addr);
   Connection* conn = new Connection(socket, addr);
   conn->setRecvConnection([=](Buffer* buf) -> bool {
@@ -13,7 +13,7 @@ int main() {
     return false;
   });
 
-  while (true) {
+  for (int i = 0; i < 5; i++) {
     std::string str;
     std::cin >> str;
     conn->write(str, true);

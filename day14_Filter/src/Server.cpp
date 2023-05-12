@@ -52,14 +52,16 @@ void Server::newConnection(Connection* conn) {
   });
 
   conn->setRecvConnection([=](Buffer* inBuf) -> bool {
-    const Request* req = new Request(inBuf);
-    Response* resp = new Response(req);
 
-    _dispatcher->resolve(req, resp);
-    conn->write(resp->serialize2Str());
-    delete req;
-    delete resp;
-    return false;
+    conn->write(inBuf->c_str());
+    // const Request* req = new Request(inBuf);
+    // Response* resp = new Response(req);
+
+    // _dispatcher->resolve(req, resp);
+    // conn->write(resp->serialize2Str());
+    // delete req;
+    // delete resp;
+    // return false;
   });
 
   std::unique_lock<std::mutex> lock(_mapLock);
