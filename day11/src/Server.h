@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <map>
 #include <mutex>
-#include <sstream>
 
 #include "Acceptor.h"
 #include "EventLoop.h"

@@ -19,9 +19,7 @@ void ThreadPool::work(int i) {
       task = _tasks.front();  // 从任务队列头取出一个任务
       _tasks.pop();
     }
-    printf("task start\n");
     task();  // 执行任务
-    printf("task end\n");
   }
 }
 

@@ -14,9 +14,7 @@ class Channel {
   bool _inEpoll;      // 是否已经在epoll中了
   bool _useSync;
 
-  // 事件回调
-  std::function<void()> _read_callback;
-  std::function<void()> _write_callback;
+  std::function<void()> _callback;  // 事件回调
 
  public:
   Channel(int fd, bool useSync=false);
@@ -31,8 +29,7 @@ class Channel {
   void deleteFromEpoll();
 
   void setRevents(uint32_t revents);
-  void setReadCallback(std::function<void()> read);
-  void setWriteCallback(std::function<void()> write);
+  void setCallback(std::function<void()> callback);
   void handle();
 
   void inETEvents();
