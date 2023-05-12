@@ -6,6 +6,7 @@ ThreadPool::~ThreadPool() { stop(); }
 
 void ThreadPool::addTask(std::function<void()> task) {
   {
+    printf("add task\n");
     std::unique_lock<std::mutex> lock(_tasksMtx);
     if (!_running) {
       printf("[warn] ThreadPool not running\n");

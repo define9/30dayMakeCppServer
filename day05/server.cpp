@@ -27,6 +27,7 @@ int main() {
   // 3. 设置为非堵塞, 放入epoll中
   socket->setnonblocking();
   Channel servChannel(socket->getFd(), ep);
+  // 监听可读事件,更新到epoll
   servChannel.enableReading();
 
   while (true) {

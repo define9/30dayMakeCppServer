@@ -24,7 +24,6 @@ void EventLoop::loop() {
     std::vector<Channel*> channels = _ep->poll();
     for (auto channel : channels) {
       if (channel->isSync()) {
-        printf("handle执行,fd: %d\n", channel->getFd());
         channel->handle();
       } else {
         _threadPool->addTask([=]() { channel->handle(); });

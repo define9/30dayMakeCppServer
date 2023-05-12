@@ -17,7 +17,7 @@ class Channel {
   std::function<void()> _callback;  // 事件回调
 
  public:
-  Channel(int fd, bool useSunc=false);
+  Channel(int fd, bool useSync=false);
   ~Channel();
 
   int getFd();
