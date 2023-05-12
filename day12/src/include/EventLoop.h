@@ -5,6 +5,7 @@
 
 #include "Channel.h"
 #include "Epoll.h"
+#include "Log.h"
 #include "ThreadPool.h"
 
 class EventLoop {

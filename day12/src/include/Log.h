@@ -11,7 +11,6 @@ class Log {
   enum LogLevel { DEBUG, INFO, WARN, ERROR };
 
  private:
-  static Log* _instance;
   static std::ostream& _out;
   static LogLevel _levelEnv;  // 当前环境的等级
   Log();
@@ -26,7 +25,6 @@ class Log {
 
  public:
   ~Log();
-  static Log* getInstance();
   static void setOutput(std::ostream& out);
 
   template <typename T, typename... Args>

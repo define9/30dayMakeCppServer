@@ -10,7 +10,6 @@
 class Socket {
  private:
   int _fd;
-  volatile bool _nonBlock;
 
  public:
   Socket();
@@ -29,5 +28,4 @@ class Socket {
   void connect(InetAddress*);
 
   int getFd();
-  bool isNonBlock();
 };

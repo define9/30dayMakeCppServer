@@ -30,7 +30,7 @@ void EventLoop::loop() {
       }
     }
   }
-  Log::info("EventLoop loop end");
+  Log::debug("loop end");
 }
 
 void EventLoop::updateChannel(Channel* channel) { _ep->updateChannel(channel); }
@@ -38,9 +38,11 @@ void EventLoop::deleteChannel(Channel* channel) { _ep->deleteChannel(channel); }
 void EventLoop::start() {
   _running = true;
   _threadPool->start(5);
+  Log::debug("start thread pool!");
 }
 
 void EventLoop::stop() {
   _running = false;
   _threadPool->stop();
+  Log::debug("stop thread pool!");
 }

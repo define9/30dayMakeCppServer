@@ -8,8 +8,6 @@
 #include <thread>
 #include <vector>
 
-#include "Log.h"
-
 class ThreadPool {
  private:
   std::vector<std::thread*> _threads;
@@ -24,11 +22,12 @@ class ThreadPool {
   ThreadPool();
   ~ThreadPool();
 
+  void start(size_t size=5);
+  void stop();
+
   template <class F, class... Args>
   auto addTask(F&& f, Args&&... args)
       -> std::future<typename std::result_of<F(Args...)>::type>;
-  void start(size_t size = 5);
-  void stop();
 };
 
 template <class F, class... Args>

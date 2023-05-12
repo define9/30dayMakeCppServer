@@ -1,7 +1,5 @@
 #include "Log.h"
 
-Log* Log::_instance = new Log();
-
 std::ostream& Log::_out = std::cout;
 
 #if BUILD_TYPE == LEVEL_DEBUG
@@ -15,8 +13,6 @@ Log::LogLevel Log::_levelEnv = LogLevel::DEBUG;
 Log::Log() {}
 
 Log::~Log() {}
-
-Log* Log::getInstance() { return _instance; }
 
 void Log::setOutput(std::ostream& out) { _out.rdbuf(out.rdbuf()); }
 

@@ -29,7 +29,6 @@ void ThreadPool::start(size_t size) {
   for (size_t i = 0; i < size; i++) {
     _threads.emplace_back(new std::thread([=]() { ThreadPool::work(i); }));
   }
-  Log::debug("ThreadPool started, thread count: ", size);
 }
 
 void ThreadPool::stop() {
@@ -41,5 +40,4 @@ void ThreadPool::stop() {
     delete _threads[i];
   }
   _threads.clear();
-  Log::debug("ThreadPool stop");
 }

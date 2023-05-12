@@ -3,16 +3,18 @@
 Connection::Connection(int fd, InetAddress* addr) {
   _addr = addr;
   _socket = new Socket(fd);
-  init(fd);
-}
+  _socket->setnonblocking();
 
-Connection::Connection(Socket* socket, InetAddress* addr) {
-  _addr = addr;
-  _socket = socket;
-  init(_socket->getFd());
+  _channel = new Channel(fd);
+  _channel->inETEvents(); // 对于客户端的连接监听，边沿触发
+  _channel->setCallback([=]() { handle(); }); // socket边沿触发回调
+
+  _inBuf = new Buffer();
+  _outBuf = new Buffer();
 }
 
 Connection::~Connection() {
+  Log::debug("~Connection");
   delete _channel;
   delete _socket;
   delete _addr;
@@ -20,128 +22,42 @@ Connection::~Connection() {
   delete _outBuf;
 }
 
-void Connection::init(int fd) {
-  _channel = new Channel(fd);
-  _channel->inETEvents();
-  _channel->setReadCallback([=]() { readHandle(); });
-  _channel->setWriteCallback([=]() { writeHandle(); });
+void Connection::handle() {
+  int fd = _socket->getFd();
+  char buf[PRE_READ_SIZE];
+  while (true) {
+    bzero(&buf, sizeof(buf));
+    ssize_t bytes_read = read(fd, buf, sizeof(buf));
+    if (bytes_read > 0) {
+      _inBuf->append(buf, sizeof(buf));
+    } else if (bytes_read == -1 && errno == EINTR) {
+      continue;
+    } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+      Log::debug("message from client: ", _inBuf->c_str());
 
-  _inBuf = new Buffer();
-  _outBuf = new Buffer();
-}
+      // 接收到了客户端传的全部数据
+      _handle(_inBuf, _outBuf);
+      // 已经得到了应该返回的
 
-/// @brief 使用 epoll 监控了消息来的事件read
-void Connection::readHandle() {
-  if (_socket->isNonBlock()) {
-    readNonBlock();
-  } else {
-    readBlock();
+      _inBuf->clear();
+      errif(write(fd, _outBuf->c_str(), _outBuf->size()) < 0,
+            "socket write error");
+      _outBuf->clear();
+      break;
+    } else if (bytes_read == 0) {  // EOF，客户端断开连接
+      Log::debug("EOF, client disconnected, fd: ", fd);
+      _cb();
+      this->~Connection();
+      return;
+    }
   }
 }
 
-void Connection::writeHandle() {
-  if (_socket->isNonBlock()) {
-    writeNonBlock();
-  } else {
-    writeBlock();
-  }
-  _outBuf->clear();  // 写完了, 清缓存
-}
-
-void Connection::setDisConnection(std::function<void()> cb) { _delCb = cb; }
-void Connection::setRecvConnection(std::function<bool(Buffer* buf)> cb) {
-  _recvCb = cb;
-}
+void Connection::setHandle(std::function<void(Buffer* in, Buffer* out)> handle) { _handle = handle; }
+void Connection::setDisConnection(std::function<void()> cb) { _cb = cb; }
 
 InetAddress* Connection::getAddr() { return _addr; }
 
 Socket* Connection::getSocket() { return _socket; }
 
 Channel* Connection::getChannel() { return _channel; }
-
-void Connection::write(std::string str, bool force) {
-  _outBuf->append(str.c_str(), str.length());
-  if (force) {
-    writeHandle();
-  }
-}
-
-std::string Connection::read(bool force) {
-  if (force) {
-    readHandle();
-  }
-  return _inBuf->c_str();
-}
-
-void Connection::readNonBlock() {
-  int fd = _socket->getFd();
-  char buf[PRE_READ_SIZE];
-  while (true) {
-    bzero(&buf, sizeof(buf));
-    ssize_t bytes_read = ::read(fd, buf, sizeof(buf));
-    if (bytes_read > 0) {
-      _inBuf->append(buf, sizeof(buf));
-    } else if (bytes_read == -1 && errno == EINTR) {
-      continue;
-    } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      if (_recvCb(_inBuf) != true) {
-        _inBuf->clear();
-      }
-      break;
-    } else if (bytes_read == 0) {  // EOF, 断开连接
-      _delCb();
-      goto kill;
-    }
-  }
-  return;
-kill:
-  this->~Connection();
-}
-void Connection::readBlock() {
-  int fd = _socket->getFd();
-  unsigned int rcv_size = 0;
-  socklen_t len = sizeof(rcv_size);
-  getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcv_size, &len);
-  char buf[rcv_size];
-  ssize_t bytes_read = ::read(fd, buf, sizeof(buf));
-  if (bytes_read > 0) {
-    _inBuf->append(buf, bytes_read);
-  } else if (bytes_read == 0) {
-    Log::debug("read EOF, blocking client fd: ", fd);
-  } else if (bytes_read == -1) {
-    Log::debug("Other error on blocking client fd: ", fd);
-  }
-  if (_recvCb(_inBuf) != true) {
-    _inBuf->clear();
-  }
-}
-
-void Connection::writeNonBlock() {
-  int fd = _socket->getFd();
-  char buf[_outBuf->size()];
-  memcpy(buf, _outBuf->c_str(), _outBuf->size());
-  int data_size = _outBuf->size();
-  int data_left = data_size;
-  while (data_left > 0) {
-    ssize_t bytes_write = ::write(fd, buf + data_size - data_left, data_left);
-    if (bytes_write == -1 && errno == EINTR) {
-      continue;
-    }
-    if (bytes_write == -1 && errno == EAGAIN) {
-      break;
-    }
-    if (bytes_write == -1) {
-      Log::debug("Other error on blocking client fd: ", fd);
-      break;
-    }
-    data_left -= bytes_write;
-  }
-}
-void Connection::writeBlock() {
-  // 没有处理send_buffer_数据大于TCP写缓冲区，的情况，可能会有bug
-  int fd = _socket->getFd();
-  ssize_t bytes_write = ::write(fd, _outBuf->c_str(), _outBuf->size());
-  if (bytes_write == -1) {
-    Log::debug("Other error on blocking client fd: ", fd);
-  }
-}

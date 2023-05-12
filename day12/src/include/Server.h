@@ -2,14 +2,12 @@
 #include <errno.h>
 #include <map>
 #include <mutex>
-#include <sstream>
 
 #include "Acceptor.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
 #include "Connection.h"
 #include "Socket.h"
-#include "Log.h"
 
 #define READ_BUFFER 1024
 

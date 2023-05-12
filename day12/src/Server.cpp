@@ -18,41 +18,43 @@ void Server::init() {
 
 Server::~Server() {
   delete _loop;
-  _loop = nullptr;
-
   delete _acceptor;
-  _acceptor = nullptr;
 }
 
 void Server::loop() {
   _acceptor->listen(_loop);
-  Log::info("listen ...");
+  Log::debug("listen ...");
 
   _loop->start();
   _loop->loop();
 }
 
+/// @brief Acceptor回调，当有连接进入调用
+/// @param conn Acceptor 负责new的连接对象
 void Server::newConnection(Connection* conn) {
   conn->setDisConnection([=]() {
     _loop->deleteChannel(conn->getChannel());
     disConnection(conn);
   });
-
-  conn->setRecvConnection([=](Buffer* inBuf) -> bool {
-    std::stringstream fmt;
-    fmt << "you say: " << inBuf->c_str() << ", your port: " << ntohs(conn->getAddr()->addr.sin_port) << std::endl;
-    conn->write(fmt.str());
-    return false;
+  conn->setHandle([=](Buffer* in, Buffer* out){
+    out->append("you say ")
+      ->append(in->c_str())
+      ->append(", you port: ")
+      ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
   });
-
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
-  Log::debug("new connection, current connection count: ", _openConnection.size());
-  Log::debug("client IP: ", inet_ntoa(conn->getAddr()->addr.sin_addr), "Port: ", ntohs(conn->getAddr()->addr.sin_port));
+  Log::debug("new connection, current connection count: %ld\n",
+         _openConnection.size());
+  Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
 
+/// @brief conn断开连接时回调
+/// @param conn 
 void Server::disConnection(Connection* conn) {
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.erase(conn->getSocket()->getFd());
-  Log::debug("dis connection, current connection count: ", _openConnection.size());
+  Log::debug("dis connection, current connection count: ",
+         _openConnection.size());
+  Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
