@@ -10,7 +10,8 @@ class Buffer {
   Buffer();
   ~Buffer();
 
-  void append(const char* str, size_t size);
+  Buffer* append(const char* str, size_t size);
+  Buffer* append(const std::string& str);
   size_t size();
 
   const char* c_str();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <unistd.h>
-
 #include <functional>
 
 #include "Epoll.h"
@@ -17,6 +16,9 @@ class Channel {
   std::function<void()> _callback;  // 事件回调
 
  public:
+  /// @brief 构造通道
+  /// @param fd 
+  /// @param useSync 是否同步执行，默认false使用线程池处理
   Channel(int fd, bool useSync=false);
   ~Channel();
 

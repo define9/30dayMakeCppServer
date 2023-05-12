@@ -36,6 +36,12 @@ void Server::newConnection(Connection* conn) {
     _loop->deleteChannel(conn->getChannel());
     disConnection(conn);
   });
+  conn->setHandle([=](Buffer* in, Buffer* out){
+    out->append("you say")
+      ->append(in->c_str())
+      ->append(", you port: ")
+      ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
+  });
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
   printf("new connection, current connection count: %ld\n",

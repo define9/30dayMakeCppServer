@@ -7,7 +7,7 @@
 
 #include "src/util.h"
 
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 2048
 
 int main() {
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);

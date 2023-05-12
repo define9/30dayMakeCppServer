@@ -9,7 +9,7 @@ Acceptor::Acceptor(InetAddress* serverAddr)
   _serverSocket->setnonblocking();
   
   _serverChannel = new Channel(_serverSocket->getFd(), true);
-  _serverChannel->inEvents();
+  _serverChannel->inEvents(); // 对于服务的socket，水平触发
 }
 
 Acceptor::~Acceptor()

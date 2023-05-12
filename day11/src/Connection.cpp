@@ -6,8 +6,8 @@ Connection::Connection(int fd, InetAddress* addr) {
   _socket->setnonblocking();
 
   _channel = new Channel(fd);
-  _channel->inETEvents();
-  _channel->setCallback([=]() { handle(); });
+  _channel->inETEvents(); // 对于客户端的连接监听，边沿触发
+  _channel->setCallback([=]() { handle(); }); // socket边沿触发回调
 
   _inBuf = new Buffer();
   _outBuf = new Buffer();
@@ -34,9 +34,15 @@ void Connection::handle() {
       continue;
     } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
       printf("message from client: %s\n", _inBuf->c_str());
-      errif(write(fd, _inBuf->c_str(), _inBuf->size()) < 0,
-            "socket write error");
+
+      // 接收到了客户端传的全部数据
+      _handle(_inBuf, _outBuf);
+      // 已经得到了应该返回的
+
       _inBuf->clear();
+      errif(write(fd, _outBuf->c_str(), _outBuf->size()) < 0,
+            "socket write error");
+      _outBuf->clear();
       break;
     } else if (bytes_read == 0) {  // EOF，客户端断开连接
       printf("EOF, client fd %d disconnected\n", fd);
@@ -47,6 +53,7 @@ void Connection::handle() {
   }
 }
 
+void Connection::setHandle(std::function<void(Buffer* in, Buffer* out)> handle) { _handle = handle; }
 void Connection::setDisConnection(std::function<void()> cb) { _cb = cb; }
 
 InetAddress* Connection::getAddr() { return _addr; }
