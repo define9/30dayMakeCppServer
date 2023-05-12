@@ -7,6 +7,7 @@
 
 #include "Channel.h"
 #include "util.h"
+#include "Timer.h"
 
 #define MAX_EVENTS 1000
 

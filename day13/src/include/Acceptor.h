@@ -6,12 +6,14 @@
 #include "EventLoop.h"
 #include "InetAddress.h"
 #include "Socket.h"
+#include "Timer.h"
 
 class Acceptor {
  private:
   std::function<void(Connection* conn)> _conn;
   Socket* _serverSocket{nullptr};                    // 服务端的socket
   Channel* _serverChannel{nullptr};                  // 服务端的channel
+  Timer* _timer;
 
  public:
   Acceptor(InetAddress* serverAddr);

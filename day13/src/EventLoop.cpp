@@ -10,10 +10,7 @@ EventLoop::~EventLoop() {
   stop();
 
   delete _ep;
-  _ep = nullptr;
-
   delete _threadPool;
-  _threadPool = nullptr;
 }
 
 void EventLoop::loop() {

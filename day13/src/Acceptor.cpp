@@ -10,12 +10,15 @@ Acceptor::Acceptor(InetAddress* serverAddr)
   
   _serverChannel = new Channel(_serverSocket->getFd(), true);
   _serverChannel->inEvents(); // 对于服务的socket，水平触发
+
+  _timer = new Timer(0);
 }
 
 Acceptor::~Acceptor()
 {
   delete _serverSocket;
   delete _serverChannel;
+  delete _timer;
 }
 
 void Acceptor::setConn(std::function<void(Connection*)> fun) {
@@ -35,4 +38,9 @@ void Acceptor::listen(EventLoop* loop) {
     _conn(conn);
   });
   loop->updateChannel(_serverChannel);
+  loop->updateChannel(_timer->getChannel());
+
+  _timer->addTask(10, [=](){
+    Log::debug("我是10s后的任务");
+  });
 }

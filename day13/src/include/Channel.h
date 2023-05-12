@@ -34,6 +34,8 @@ class Channel {
   void setCallback(std::function<void()> callback);
   void handle();
 
+  /// @brief 边沿触发监听读事件
   void inETEvents();
+  /// @brief 水平触发监听读事件
   void inEvents();
 };
