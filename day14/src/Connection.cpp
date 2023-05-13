@@ -4,6 +4,7 @@ Connection::Connection(int fd, InetAddress* addr) {
   _addr = addr;
   _socket = new Socket(fd);
   _socket->setnonblocking();
+  socketReuseAddr(fd);
 
   _channel = new Channel(fd);
   _channel->inETEvents();  // 对于客户端的连接监听，边沿触发

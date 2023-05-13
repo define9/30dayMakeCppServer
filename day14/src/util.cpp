@@ -48,6 +48,12 @@ bool connectStatus(int res) {
   return false;
 }
 
+void socketReuseAddr(int fd) {
+  Log::debug("set reuse addr");
+  int opt = 1;
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt, sizeof(opt));
+}
+
 std::vector<std::string> stringSplit(const std::string &str, char delim) {
   std::size_t previous = 0;
   std::size_t current = str.find(delim);

@@ -20,6 +20,11 @@ void Server::init() {
 }
 
 Server::~Server() {
+  for (auto it : _openConnection) {
+    Log::debug("dis conn: ", it.first);
+    it.second->disConnect();
+  }
+  _openConnection.clear();
   delete _loop;
   delete _acceptor;
   delete _timer;

@@ -15,6 +15,7 @@ Socket::~Socket() {
 }
 
 void Socket::bind(InetAddress* addr) {
+  socketReuseAddr(_fd);
   errif(::bind(_fd, (sockaddr*)&addr->addr, addr->addr_len) < 0,
         "socket bind error");
 }

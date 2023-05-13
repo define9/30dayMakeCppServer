@@ -19,6 +19,10 @@ bool socketIsOpen(int fd);
 
 bool connectStatus(int res);
 
+/// @brief socket 允许复用
+/// @param fd 
+void socketReuseAddr(int fd);
+
 std::vector<std::string> stringSplit(const std::string &str, char delim);
 
 std::string getSuffix(const std::string &filename);
