@@ -24,6 +24,8 @@ class Connection {
 
   std::function<void()> _cb;  // 断开连接的回调函数
   std::function<void(Buffer* in, Buffer* out)> _handle;  // 对于输入，处理成输出
+
+  bool _keepAlive = false;
  public:
   Connection(int fd, InetAddress* addr);
   ~Connection();
@@ -31,6 +33,7 @@ class Connection {
   void handle();
   void setHandle(std::function<void(Buffer* in, Buffer* out)> handle);
   void setDisConnection(std::function<void()> cb);
+  void setKeepAlive(bool);
   void disConnect();
 
   InetAddress* getAddr();

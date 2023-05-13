@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+#include <map>
 
 #include <iostream>
 
@@ -16,5 +18,21 @@ int guard(int, const char*);
 bool socketIsOpen(int fd);
 
 bool connectStatus(int res);
+
+std::vector<std::string> stringSplit(const std::string &str, char delim);
+
+std::string getSuffix(const std::string &filename);
+
+template <typename Key, typename Value>
+auto safeGet(const std::map<Key, Value>& map, const Key key, const Value def) {
+  auto it = map.find(key);
+  Value res;
+  if (it == map.end()) {
+    res = def;
+  } else {
+    res = it->second;
+  }
+  return res;
+}
 
 #endif

@@ -19,7 +19,7 @@ Buffer* Buffer::append(const std::string& str) {
 
 size_t Buffer::size() { return _buf.size(); }
 
-const char* Buffer::c_str(){
+const char* Buffer::c_str() const {
     return _buf.c_str();
 }
 

@@ -45,10 +45,14 @@ void Server::newConnection(Connection* conn) {
       Log::debug("timeout...");
       conn->disConnect();
     });
+
+    Request req(in);
+    conn->setKeepAlive(false);
     out->append("you say ")
         ->append(in->c_str())
         ->append(", you port: ")
         ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
+
     _timer->delTask(job);
   });
   std::unique_lock<std::mutex> lock(_mapLock);

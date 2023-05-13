@@ -50,6 +50,9 @@ void Connection::handle() {
       return;
     }
   }
+  if (!_keepAlive) {
+    disConnect();
+  }
 }
 
 void Connection::setHandle(
@@ -57,6 +60,7 @@ void Connection::setHandle(
   _handle = handle;
 }
 void Connection::setDisConnection(std::function<void()> cb) { _cb = cb; }
+void Connection::setKeepAlive(bool ka) { _keepAlive = ka; }
 void Connection::disConnect() {
   _cb();
   this->~Connection();

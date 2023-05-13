@@ -8,6 +8,8 @@
 #include "InetAddress.h"
 #include "Connection.h"
 #include "Socket.h"
+#include "model/Request.h"
+#include "model/Response.h"
 
 #define READ_BUFFER 1024
 
