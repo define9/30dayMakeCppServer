@@ -6,8 +6,8 @@ Connection::Connection(int fd, InetAddress* addr) {
   _socket->setnonblocking();
 
   _channel = new Channel(fd);
-  _channel->inETEvents(); // 对于客户端的连接监听，边沿触发
-  _channel->setCallback([=]() { handle(); }); // socket边沿触发回调
+  _channel->inETEvents();  // 对于客户端的连接监听，边沿触发
+  _channel->setCallback([=]() { handle(); });  // socket边沿触发回调
 
   _inBuf = new Buffer();
   _outBuf = new Buffer();
@@ -46,16 +46,21 @@ void Connection::handle() {
       break;
     } else if (bytes_read == 0) {  // EOF，客户端断开连接
       Log::debug("EOF, client disconnected, fd: ", fd);
-      _cb();
-      this->~Connection();
+      disConnect();
       return;
     }
   }
 }
 
-void Connection::setHandle(std::function<void(Buffer* in, Buffer* out)> handle) { _handle = handle; }
+void Connection::setHandle(
+    std::function<void(Buffer* in, Buffer* out)> handle) {
+  _handle = handle;
+}
 void Connection::setDisConnection(std::function<void()> cb) { _cb = cb; }
-
+void Connection::disConnect() {
+  _cb();
+  this->~Connection();
+}
 InetAddress* Connection::getAddr() { return _addr; }
 
 Socket* Connection::getSocket() { return _socket; }

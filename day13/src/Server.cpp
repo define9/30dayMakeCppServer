@@ -14,11 +14,15 @@ void Server::init() {
   _loop = new EventLoop();
   _acceptor = new Acceptor(&_serverAddr);
   _acceptor->setConn([=](Connection* conn) { newConnection(conn); });
+  _timer = new Timer();
+
+  _loop->updateChannel(_timer->getChannel());
 }
 
 Server::~Server() {
   delete _loop;
   delete _acceptor;
+  delete _timer;
 }
 
 void Server::loop() {
@@ -36,25 +40,30 @@ void Server::newConnection(Connection* conn) {
     _loop->deleteChannel(conn->getChannel());
     disConnection(conn);
   });
-  conn->setHandle([=](Buffer* in, Buffer* out){
+  conn->setHandle([=](Buffer* in, Buffer* out) {
+    auto job = _timer->addTask(5, [=]() {
+      Log::debug("timeout...");
+      conn->disConnect();
+    });
     out->append("you say ")
-      ->append(in->c_str())
-      ->append(", you port: ")
-      ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
+        ->append(in->c_str())
+        ->append(", you port: ")
+        ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
+    _timer->delTask(job);
   });
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
   Log::debug("new connection, current connection count: %ld\n",
-         _openConnection.size());
+             _openConnection.size());
   Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }
 
 /// @brief conn断开连接时回调
-/// @param conn 
+/// @param conn
 void Server::disConnection(Connection* conn) {
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.erase(conn->getSocket()->getFd());
   Log::debug("dis connection, current connection count: ",
-         _openConnection.size());
+             _openConnection.size());
   Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }

@@ -31,6 +31,7 @@ class Connection {
   void handle();
   void setHandle(std::function<void(Buffer* in, Buffer* out)> handle);
   void setDisConnection(std::function<void()> cb);
+  void disConnect();
 
   InetAddress* getAddr();
   Socket* getSocket();

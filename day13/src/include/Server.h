@@ -15,6 +15,7 @@ class Server {
  private:
   EventLoop* _loop{nullptr};
   Acceptor* _acceptor{nullptr};
+  Timer* _timer;
 
   InetAddress _serverAddr;
   std::map<int, Connection*> _openConnection;
