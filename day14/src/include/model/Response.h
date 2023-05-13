@@ -36,20 +36,19 @@ const static std::map<std::string, const char*> suffix2Type = {
 }  // namespace ResponseConstant
 
 class Response {
- private:
+ public:
   /* 第一行, 也是第一部分 */
-  std::string _httpVersion;
+  std::string httpVersion;
 
   /// @brief 状态码
-  uint16_t _status;
+  uint16_t status;
 
   /* 第二部分 */
-  std::map<std::string, std::string> _head;
+  std::map<std::string, std::string> head;
 
   /* 第三部分 */
-  std::string _body;
+  std::string body;
 
- public:
   Response(const Request* req);
   ~Response();
 
@@ -58,6 +57,4 @@ class Response {
 
   void setBody(const std::string& body);
   void setContentType(const std::string& type);
-
-  const std::string serialize2Str();
 };

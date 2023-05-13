@@ -51,14 +51,17 @@ void Server::newConnection(Connection* conn) {
       conn->disConnect();
     });
 
-    Request req(in);
+    // 把输入缓存解析成 Http请求
+    Request* req = RequestBuilder::build(in);
+    Response* resp = new Response(req);
+    resp->setBody("");
     conn->setKeepAlive(false);
-    out->append("you say ")
-        ->append(in->c_str())
-        ->append(", you port: ")
-        ->append(std::to_string(ntohs(conn->getAddr()->addr.sin_port)));
 
+    // 将响应写到输出缓存,然后写入
+    out->append(ResponseBuilder::serialize(resp));
     _timer->delTask(job);
+    delete req;
+    delete resp;
   });
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);

@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.15)
 # set the project name
 project(TinyServer
         VERSION 0.1
-        DESCRIPTION "pine"
+        DESCRIPTION "TinyServer"
         LANGUAGES C CXX
         )
 

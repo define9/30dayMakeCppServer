@@ -8,6 +8,8 @@
 #include "InetAddress.h"
 #include "Connection.h"
 #include "Socket.h"
+#include "builder/RequestBuilder.h"
+#include "builder/ResponseBuilder.h"
 #include "model/Request.h"
 #include "model/Response.h"
 
