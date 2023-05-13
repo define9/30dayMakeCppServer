@@ -33,12 +33,12 @@ void Timer::next(u_int8_t i) {
   }
   p[i] = (p[i] + 1) % scale[i];
   if (p[i] == 0) {
-    jobUpgrade(i);
     if (i == 2) {
       p[0] = p[1] = p[2] = 0;
     } else {
       next(i + 1);
     }
+    jobUpgrade(i + 1);
   }
 }
 
@@ -54,6 +54,8 @@ void Timer::jobUpgrade(u_int8_t i) {
   }
 
   auto& jobVec = jobs[i][p[i]];
+  Log::debug("need upgrade job size: ", jobVec.size());
+  
   for (auto& job : jobVec) {
     jobs[targetIndex][job.time[targetIndex]].emplace_back(job);
     Log::debug("move job to ", job.time[targetIndex]);
@@ -76,6 +78,7 @@ Channel* Timer::getChannel() {
 
 void Timer::tick() {
   next(0);  // 时间轮自增
+  Log::debug("p: ", (int)p[0], (int)p[1], (int)p[2]);
 
   // 只执行秒轮盘上的任务
   for (auto& job : jobs[0][p[0]]) {
@@ -97,7 +100,7 @@ void Timer::addTask(long sec, std::function<void()> cb) {
   for (size_t i = 2; i >= 0; i--) {
     if (job.time[i] != p[i]) {
       jobs[i][job.time[i]].emplace_back(job);
-      Log::debug("add job to ", job.time[i], " i: ", i);
+      Log::debug("add job to ", (int)job.time[i], " i: ", i);
       break;
     }
   }
