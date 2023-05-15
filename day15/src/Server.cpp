@@ -58,6 +58,7 @@ void Server::newConnection(Connection* conn) {
     RequestBuilder::build(req, in);
     Response* resp = new Response(req);
 
+    // 负责解决请求和响应
     _dispatcher->resolve(req, resp);
 
     // 将响应写到输出缓存,然后写入

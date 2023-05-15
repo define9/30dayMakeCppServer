@@ -14,15 +14,6 @@ const static std::map<std::string, Method> method = {{"GET", Method::GET},
                                                      {"HEAD", Method::HEAD},
                                                      {"PUT", Method::PUT}};
 
-const int findByCArray(const std::string& buf, const char array[],
-                       std::size_t startIndex = 0) {
-  auto i = buf.find(array, startIndex);
-  if (i == std::string::npos) {
-    return -1;
-  }
-  return i;
-}
-
 }  // namespace
 
 RequestBuilder::RequestBuilder() {}
@@ -31,42 +22,62 @@ RequestBuilder::~RequestBuilder() {}
 
 void RequestBuilder::build(Request* req, const Buffer* buf) {
   parseRequest(req, buf);
+  // inspect(req);
 }
 
-bool RequestBuilder::parseRequestLine(Request* req, const char* begin,
-                                      const size_t len) {
-  std::string str = std::string(begin, begin + len);
-  auto vs = stringSplit(str, ' ');
-
-  req->method = safeGet(method, vs[0], Method::GET);
-  req->path = vs[1];
-  req->httpVersion = vs[2];
-
-  return true;
+void RequestBuilder::inspect(const Request* req) {
+  Log::debug("---------- [inspect Request start] ----------");
+  Log::debug("method: ", req->method);
+  Log::debug("path: ", req->path);
+  Log::debug("httpVersion: ", req->httpVersion);
+  for (auto h : req->head) {
+    Log::debug("head: ", h.first, ": ", h.second);
+  }
+  Log::debug("body: ", req->body);
+  Log::debug("---------- [inspect Request   end] ----------");
 }
 
 bool RequestBuilder::parseRequest(Request* req, const Buffer* buf) {
   Log::debug("parse Http Request [start]");
   State state = State::ExpectRequestLine;
-  bool hasMore = true;
+  std::istringstream inStream(buf->c_str());
+  std::string line;
 
-  while (hasMore) {
+  while (getline(inStream, line)) {
     switch (state) {
       case State::ExpectRequestLine: {
-        const int crlf = findByCArray(buf->c_str(), "\r\n");
-        if (crlf != -1) {
-          parseRequestLine(req, buf->c_str(), crlf);
-          state = State::ExpectHeaders;
+        std::istringstream line_stream(line);
+        std::string tmp;
+        line_stream >> tmp;
+        if (tmp.find("HTTP") == std::string::npos) {
+          req->method = safeGet(method, tmp, Method::GET);
+          
+          line_stream >> tmp;
+          req->path = tmp;
+
+          line_stream >> tmp;
+          req->httpVersion = tmp;
+        }
+        state = State::ExpectHeaders;
+      } break;
+      case State::ExpectHeaders: {
+        if (line.size() == 1) {  // \r
+          state = State::Done;
+        } else {
+          auto pos = line.find(':');
+          if (pos == std::string::npos) {
+            continue;
+          }
+          std::string key(line, 0, pos);
+          std::string val(line, pos + 2);
+          req->head.insert_or_assign(key, val);
         }
       } break;
-      case State::ExpectHeaders:
+      case State::ExpectBody: {
+        req->body.append(line).push_back('\n');
         state = State::Done;
-        break;
-      case State::ExpectBody:
-        state = State::Done;
-        break;
+      } break;
       case State::Done:
-        hasMore = false;
         break;
     }
   }
