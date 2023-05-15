@@ -13,6 +13,7 @@ class Request {
   /* 第一行, 也是第一部分 */
   Method method;
   std::string path;
+  std::string url;
   std::string httpVersion;
 
   /* 第二部分, 结束后单独一个\r\n */

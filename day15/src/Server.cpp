@@ -48,7 +48,7 @@ void Server::newConnection(Connection* conn) {
     disConnection(conn);
   });
   conn->setHandle([=](Buffer* in, Buffer* out) {
-    auto job = _timer->addTask(5, [=]() {
+    auto job = _timer->addTask(60, [=]() {
       Log::debug("timeout...");
       conn->disConnect();
     });
@@ -60,7 +60,7 @@ void Server::newConnection(Connection* conn) {
 
     // 负责解决请求和响应
     _dispatcher->resolve(req, resp);
-
+    
     // 将响应写到输出缓存,然后写入
     out->append(ResponseBuilder::serialize(resp));
     _timer->delTask(job);

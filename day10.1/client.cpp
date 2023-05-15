@@ -22,7 +22,7 @@ int main() {
   while (true) {
     char buf[BUFFER_SIZE];
     bzero(&buf, sizeof(buf));
-    scanf("%s", buf);
+    scanf("%[^\n]",buf);
     ssize_t write_bytes = write(sockfd, buf, sizeof(buf));
     printf("write size: %d\n", write_bytes);
     if (write_bytes == -1) {
@@ -31,7 +31,7 @@ int main() {
     }
     bzero(&buf, sizeof(buf));
     ssize_t read_bytes = read(sockfd, buf, sizeof(buf));
-    printf("read size: %d\n", write_bytes);
+    printf("read size: %d\n", read_bytes);
     if (read_bytes > 0) {
       printf("message from server: %s\n", buf);
     } else if (read_bytes == 0) {
