@@ -15,5 +15,5 @@ class RequestBuilder {
   RequestBuilder();
   ~RequestBuilder();
 
-  static Request* build(const Buffer* buf);
+  static void build(Request* req, const Buffer* buf);
 };

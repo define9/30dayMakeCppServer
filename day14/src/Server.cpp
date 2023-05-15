@@ -15,6 +15,7 @@ void Server::init() {
   _acceptor = new Acceptor(&_serverAddr);
   _acceptor->setConn([=](Connection* conn) { newConnection(conn); });
   _timer = new Timer();
+  _dispatcher = new Dispatcher();
 
   _loop->updateChannel(_timer->getChannel());
 }
@@ -28,6 +29,7 @@ Server::~Server() {
   delete _loop;
   delete _acceptor;
   delete _timer;
+  delete _dispatcher;
 }
 
 void Server::loop() {
@@ -52,10 +54,11 @@ void Server::newConnection(Connection* conn) {
     });
 
     // 把输入缓存解析成 Http请求
-    Request* req = RequestBuilder::build(in);
+    Request* req = new Request();
+    RequestBuilder::build(req, in);
     Response* resp = new Response(req);
-    resp->setBody("");
-    conn->setKeepAlive(false);
+
+    _dispatcher->resolve(req, resp);
 
     // 将响应写到输出缓存,然后写入
     out->append(ResponseBuilder::serialize(resp));

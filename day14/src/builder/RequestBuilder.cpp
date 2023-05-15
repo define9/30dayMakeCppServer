@@ -29,10 +29,8 @@ RequestBuilder::RequestBuilder() {}
 
 RequestBuilder::~RequestBuilder() {}
 
-Request* RequestBuilder::build(const Buffer* buf) {
-  Request* req = new Request();
+void RequestBuilder::build(Request* req, const Buffer* buf) {
   parseRequest(req, buf);
-  return req;
 }
 
 bool RequestBuilder::parseRequestLine(Request* req, const char* begin,

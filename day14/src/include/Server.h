@@ -1,12 +1,14 @@
 #pragma once
 #include <errno.h>
+
 #include <map>
 #include <mutex>
 
 #include "Acceptor.h"
+#include "Connection.h"
+#include "Dispatcher.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
-#include "Connection.h"
 #include "Socket.h"
 #include "builder/RequestBuilder.h"
 #include "builder/ResponseBuilder.h"
@@ -20,6 +22,7 @@ class Server {
   EventLoop* _loop{nullptr};
   Acceptor* _acceptor{nullptr};
   Timer* _timer;
+  Dispatcher* _dispatcher;
 
   InetAddress _serverAddr;
   std::map<int, Connection*> _openConnection;
