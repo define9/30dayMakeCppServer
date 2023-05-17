@@ -94,7 +94,7 @@ bool RequestBuilder::parseRequest(Request* req, const Buffer* buf) {
       } break;
       case State::ExpectHeaders: {
         if (line.size() == 1) {  // \r
-          state = State::Done;
+          state = State::ExpectBody;
         } else {
           auto pos = line.find(':');
           if (pos == std::string::npos) {

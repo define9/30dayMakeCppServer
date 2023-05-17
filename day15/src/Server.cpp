@@ -17,6 +17,10 @@ void Server::init() {
   _timer = new Timer();
   _dispatcher = new Dispatcher();
 
+  _dispatcher->addHandle("/echo", [=](const Request* req, Response* resp) {
+    resp->setBody(req->body);
+  });
+
   _loop->updateChannel(_timer->getChannel());
 }
 
@@ -60,7 +64,7 @@ void Server::newConnection(Connection* conn) {
 
     // 负责解决请求和响应
     _dispatcher->resolve(req, resp);
-    
+
     // 将响应写到输出缓存,然后写入
     out->append(ResponseBuilder::serialize(resp));
     _timer->delTask(job);

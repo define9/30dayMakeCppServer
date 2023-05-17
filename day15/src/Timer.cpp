@@ -58,6 +58,9 @@ void Timer::jobUpgrade(u_int8_t i) {
   Log::debug("need upgrade job size: ", jobVec.size());
 
   for (auto& job : jobVec) {
+    if (job.cancel) {
+      continue;
+    }
     jobs[targetIndex][job.time[targetIndex]].emplace_back(job);
     Log::debug("move job to ", job.time[targetIndex]);
   }
