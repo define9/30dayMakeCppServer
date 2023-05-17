@@ -29,6 +29,9 @@ class Server {
   std::mutex _mapLock;
 
   void init();
+  
+  void newConnection(Connection* conn);
+  void disConnection(Connection* conn);
 
  public:
   Server(const char* ip, uint16_t port);
@@ -37,6 +40,6 @@ class Server {
 
   void loop();
 
-  void newConnection(Connection* conn);
-  void disConnection(Connection* conn);
+  void get(const std::string& url, HandleFun fun);
+  void post(const std::string& url, HandleFun fun);
 };

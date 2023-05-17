@@ -17,10 +17,7 @@ void Server::init() {
   _timer = new Timer();
   _dispatcher = new Dispatcher();
 
-  _dispatcher->addHandle("/echo", [=](const Request* req, Response* resp) {
-    resp->setBody(req->body);
-  });
-
+  // 定时器加入到epoll中
   _loop->updateChannel(_timer->getChannel());
 }
 
@@ -86,4 +83,12 @@ void Server::disConnection(Connection* conn) {
   Log::debug("dis connection, current connection count: ",
              _openConnection.size());
   Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
+}
+
+void Server::get(const std::string& url, HandleFun fun) {
+  _dispatcher->addHandle(url, ReqMethod::GET, fun);
+}
+
+void Server::post(const std::string& url, HandleFun fun) {
+  _dispatcher->addHandle(url, ReqMethod::POST, fun);
 }

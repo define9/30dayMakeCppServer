@@ -8,5 +8,9 @@
 int main() {
   Server server("0.0.0.0", 8888);
   printf("server init done.\n");
+
+  server.post("/echo",
+              [=](const Request *req, Response *resp) { resp->setBody("hi"); });
+
   server.loop();
 }
