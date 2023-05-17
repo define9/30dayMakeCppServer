@@ -74,3 +74,10 @@ std::vector<std::string> stringSplit(const std::string &str, char delim) {
 std::string getSuffix(const std::string &filename) {
   return filename.substr(filename.find_last_of('.') + 1);
 }
+
+bool startWith(const std::string &str, const std::string &prefix) {
+  return str.rfind(prefix, 0) == 0;
+}
+bool startWith(const std::string &str, char prefix) {
+  return str.rfind(prefix, 0) == 0;
+}

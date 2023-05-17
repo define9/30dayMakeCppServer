@@ -43,4 +43,6 @@ class Server {
 
   void get(const std::string& url, HandleFun fun);
   void post(const std::string& url, HandleFun fun);
+
+  void mount(const std::string &path, const std::string &dir);
 };

@@ -13,5 +13,7 @@ int main() {
     resp->setBody("hi");
   });
 
+  server->mount("/s", "./www"); // /s/a.txt
+
   server->loop();
 }

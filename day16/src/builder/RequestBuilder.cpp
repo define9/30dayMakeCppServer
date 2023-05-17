@@ -14,13 +14,6 @@ static const std::map<std::string, Method> method = {{"GET", Method::GET},
                                                      {"HEAD", Method::HEAD},
                                                      {"PUT", Method::PUT}};
 
-static const bool startWith(const std::string& str, const std::string& prefix) {
-  return str.rfind(prefix, 0) == 0;
-}
-static const bool startWith(const std::string& str, char prefix) {
-  return str.rfind(prefix, 0) == 0;
-}
-
 static const int findI(const std::string& str, char c, size_t i) {
   size_t index = 0;
   while ((index = str.find(c, index)) < str.length()) {

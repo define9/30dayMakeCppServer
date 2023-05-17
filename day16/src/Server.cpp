@@ -92,3 +92,7 @@ void Server::get(const std::string& url, HandleFun fun) {
 void Server::post(const std::string& url, HandleFun fun) {
   _dispatcher->addHandle(url, ReqMethod::POST, fun);
 }
+
+void Server::mount(const std::string& path, const std::string& dir) {
+  _dispatcher->mount(path, dir);
+}
