@@ -4,7 +4,6 @@ EventLoop::EventLoop() {
   _running = false;
   _ep = new Epoll();
   _threadPool = new ThreadPool();
-  _timer = new Timer();
 }
 
 EventLoop::~EventLoop() {
@@ -12,7 +11,6 @@ EventLoop::~EventLoop() {
 
   delete _ep;
   delete _threadPool;
-  delete _timer;
 }
 
 void EventLoop::loop() {
@@ -38,9 +36,6 @@ void EventLoop::start() {
   _running = true;
   _threadPool->start(5);
   Log::debug("start thread pool!");
-
-  updateChannel(_timer->getChannel());
-  Log::debug("timer add to epoll. [done]");
 }
 
 void EventLoop::stop() {

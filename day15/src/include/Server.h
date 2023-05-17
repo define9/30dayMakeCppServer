@@ -9,6 +9,7 @@
 #include "Dispatcher.h"
 #include "EventLoop.h"
 #include "InetAddress.h"
+#include "SignalHandle.h"
 #include "Socket.h"
 #include "builder/RequestBuilder.h"
 #include "builder/ResponseBuilder.h"
@@ -29,7 +30,7 @@ class Server {
   std::mutex _mapLock;
 
   void init();
-  
+
   void newConnection(Connection* conn);
   void disConnection(Connection* conn);
 

@@ -14,7 +14,6 @@ class EventLoop {
   Epoll* _ep;
   volatile bool _running;
   ThreadPool* _threadPool;
-  Timer* _timer;
 
  public:
   EventLoop();
