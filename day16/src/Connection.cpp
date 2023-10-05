@@ -6,7 +6,8 @@ Connection::Connection(int fd, InetAddress* addr) {
   _socket->setnonblocking();
   socketReuseAddr(fd);
 
-  _channel = new Channel(fd);
+  // TODO 先暂时使用同步
+  _channel = new Channel(fd, true);
   _channel->inETEvents();  // 对于客户端的连接监听，边沿触发
   _channel->setCallback([=]() { handle(); });  // socket边沿触发回调
 
@@ -15,7 +16,6 @@ Connection::Connection(int fd, InetAddress* addr) {
 }
 
 Connection::~Connection() {
-  Log::debug("~Connection");
   delete _channel;
   delete _socket;
   delete _addr;
@@ -34,8 +34,6 @@ void Connection::handle() {
     } else if (bytes_read == -1 && errno == EINTR) {
       continue;
     } else if (bytes_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      Log::debug("message from client: ", _inBuf->c_str());
-
       // 接收到了客户端传的全部数据
       _handle(_inBuf, _outBuf);
       // 已经得到了应该返回的
@@ -51,9 +49,6 @@ void Connection::handle() {
       return;
     }
   }
-  if (!_keepAlive) {
-    disConnect();
-  }
 }
 
 void Connection::setHandle(
@@ -63,6 +58,7 @@ void Connection::setHandle(
 void Connection::setDisConnection(std::function<void()> cb) { _cb = cb; }
 void Connection::setKeepAlive(bool ka) { _keepAlive = ka; }
 void Connection::disConnect() {
+  Log::debug("断开连接 client Port: ", ntohs(_addr->addr.sin_port), ", fd: ", _channel->getFd());
   _cb();
   this->~Connection();
 }

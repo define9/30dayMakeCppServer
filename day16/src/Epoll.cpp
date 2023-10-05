@@ -21,9 +21,11 @@ std::vector<Channel*> Epoll::poll(int timeout) {
   int nfds = epoll_wait(_epfd, _events, MAX_EVENTS, timeout);  // 有nfds个事件
   errif(nfds < 0, "epoll_wait error");
   for (int i = 0; i < nfds; i++) {
-    Channel* channel = (Channel*)_events[i].data.ptr;
-    channel->setRevents(_events[i].events);  // 设置正在发生的事件
-    activeEvents.push_back(channel);
+    if (_events[i].events & EPOLLIN) {
+      Channel* channel = (Channel*)_events[i].data.ptr;
+      channel->setRevents(_events[i].events);  // 设置正在发生的事件
+      activeEvents.push_back(channel);
+    }
   }
   return activeEvents;
 }
@@ -45,6 +47,12 @@ void Epoll::updateChannel(Channel* channel) {
 
 void Epoll::deleteChannel(Channel* channel) {
   int fd = channel->getFd();
-  errif(epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr) < 0, "epoll add error");
-  channel->addToEpoll();
+
+  if (!isValidSocket(fd)) {
+    Log::warn("fd不合法: ", fd);
+    return;
+  }
+
+  errif(epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr) < 0, "epoll del error");
+  channel->deleteFromEpoll();
 }

@@ -16,7 +16,7 @@ class ThreadPool {
   std::condition_variable _cv;
   volatile bool _running;
 
-  void work(int i);
+  void work(int id);
 
  public:
   ThreadPool();

@@ -26,9 +26,10 @@ void Acceptor::listen(EventLoop* loop) {
     int fd = _serverSocket->accept(addr);
     Connection* conn = new Connection(fd, addr);
 
+    _conn(conn);
+    
     Channel* ch = conn->getChannel();
     loop->updateChannel(ch);  // 将连接的事件, 放到loop中
-    _conn(conn);
   });
   loop->updateChannel(_serverChannel);
 }

@@ -2,8 +2,10 @@
 #define UTIL_H
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <map>
@@ -18,6 +20,8 @@ int guard(int, const char*);
 bool socketIsOpen(int fd);
 
 bool connectStatus(int res);
+
+int isValidSocket(int sockfd);
 
 /// @brief socket 允许复用
 /// @param fd

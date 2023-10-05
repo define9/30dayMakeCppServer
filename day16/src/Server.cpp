@@ -70,7 +70,7 @@ void Server::newConnection(Connection* conn) {
   });
   std::unique_lock<std::mutex> lock(_mapLock);
   _openConnection.insert_or_assign(conn->getSocket()->getFd(), conn);
-  Log::debug("new connection, current connection count: %ld\n",
+  Log::debug("new connection, current connection count: ",
              _openConnection.size());
   Log::debug("client Port: ", ntohs(conn->getAddr()->addr.sin_port));
 }

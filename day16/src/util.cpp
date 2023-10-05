@@ -81,3 +81,21 @@ bool startWith(const std::string &str, const std::string &prefix) {
 bool startWith(const std::string &str, char prefix) {
   return str.rfind(prefix, 0) == 0;
 }
+
+int isValidSocket(int sockfd) {
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1) {
+        // Error occurred, handle the error
+        perror("fcntl");
+        return 0;
+    }
+
+    // Check if O_NONBLOCK flag is set
+    if (flags & O_NONBLOCK) {
+        // Socket is non-blocking, assume it's valid
+        return 1;
+    } else {
+        // Socket is blocking, assume it's valid
+        return 1;
+    }
+}

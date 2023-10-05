@@ -1,6 +1,7 @@
 #include "Log.h"
 
 std::ostream& Log::_out = std::cout;
+std::mutex Log::_lock = std::mutex();
 
 #if BUILD_TYPE == LEVEL_DEBUG
 Log::LogLevel Log::_levelEnv = LogLevel::DEBUG;

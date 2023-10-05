@@ -23,7 +23,7 @@ void Socket::bind(InetAddress* addr) {
 void Socket::listen() { errif(::listen(_fd, SOMAXCONN) < 0, "listen error"); }
 
 void Socket::setnonblocking() {
-  fcntl(_fd, F_SETFL, fcntl(_fd, F_GETFL) | O_NONBLOCK);
+  fcntl(_fd, F_SETFL, fcntl(_fd, F_GETFL, 0) | O_NONBLOCK);
 }
 
 int Socket::accept(InetAddress* addr) {
