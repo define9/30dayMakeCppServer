@@ -19,13 +19,26 @@ void EventLoop::loop() {
   }
   while (_running) {
     std::vector<Channel*> channels = _ep->poll();
+
+#if BUILD_TYPE == LEVEL_DEBUG
+    std::string buf = "epoll channel fds: ";
+#endif
+
     for (auto channel : channels) {
+#if BUILD_TYPE == LEVEL_DEBUG
+      buf.append(std::to_string(channel->getFd())).append(":")
+        .append(std::to_string(channel->getRevents()).append(", "));
+#endif
+
       if (channel->isSync()) {
         channel->handle();
       } else {
         _threadPool->addTask([=]() { channel->handle(); });
       }
     }
+#if BUILD_TYPE == LEVEL_DEBUG
+    Log::debug(buf);
+#endif
   }
   Log::debug("loop end");
 }

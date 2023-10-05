@@ -4,7 +4,7 @@ ThreadPool::ThreadPool() {}
 
 ThreadPool::~ThreadPool() { stop(); }
 
-void ThreadPool::work(int i) {
+void ThreadPool::work(int id) {
   while (true) {
     std::function<void()> task;
     {  // 在这个{}作用域内对std::mutex加锁，出了作用域会自动解锁，不需要调用unlock()
@@ -16,7 +16,7 @@ void ThreadPool::work(int i) {
       if (!_running && _tasks.empty()) {
         return;  // 任务队列为空并且线程池停止，退出线程
       }
-      task = _tasks.front();  // 从任务队列头取出一个任务
+      task = std::move(_tasks.front());  // 从任务队列头取出一个任务
       _tasks.pop();
     }
     task();  // 执行任务

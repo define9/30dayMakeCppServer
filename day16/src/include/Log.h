@@ -1,7 +1,9 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
 #include <string>
+#include <thread>
 
 #include "build_type.hpp"
 
@@ -13,6 +15,7 @@ class Log {
  private:
   static std::ostream& _out;
   static LogLevel _levelEnv;  // 当前环境的等级
+  static std::mutex _lock;
   Log();
 
   static void printHead(const LogLevel& level);
@@ -43,7 +46,9 @@ class Log {
 template <typename T, typename... Args>
 void Log::debug(const T& firstArg, Args... args) {
   if (_levelEnv <= LogLevel::DEBUG) {
+    std::unique_lock<std::mutex> lock(_lock);
     printHead(LogLevel::DEBUG);
+    _out << "[tid:" << std::this_thread::get_id() << "] ";
     print(firstArg, args...);
   }
 }
@@ -51,6 +56,7 @@ void Log::debug(const T& firstArg, Args... args) {
 template <typename T, typename... Args>
 void Log::info(const T& firstArg, Args... args) {
   if (_levelEnv <= LogLevel::INFO) {
+    std::unique_lock<std::mutex> lock(_lock);
     printHead(LogLevel::INFO);
     print(firstArg, args...);
   }
@@ -59,6 +65,7 @@ void Log::info(const T& firstArg, Args... args) {
 template <typename T, typename... Args>
 void Log::warn(const T& firstArg, Args... args) {
   if (_levelEnv <= LogLevel::WARN) {
+    std::unique_lock<std::mutex> lock(_lock);
     printHead(LogLevel::WARN);
     print(firstArg, args...);
   }
@@ -67,6 +74,7 @@ void Log::warn(const T& firstArg, Args... args) {
 template <typename T, typename... Args>
 void Log::error(const T& firstArg, Args... args) {
   if (_levelEnv <= LogLevel::ERROR) {
+    std::unique_lock<std::mutex> lock(_lock);
     printHead(LogLevel::ERROR);
     print(firstArg, args...);
   }
